@@ -1,7 +1,6 @@
 @ECHO OFF
 SETLOCAL
 REM  OPTIONS
-set claspre=0
 set static=0
 set machine=0
 set mt=0
@@ -41,7 +40,6 @@ IF [%1]==[] (
 	ECHO.    ELSE        : configure for custom configuration
 	ECHO.
 	ECHO  --with-mt      : enable multi-thread support ^(see below^)
-	ECHO  --with-claspre : enable claspre features in clasp
 	ECHO  --static       : link statically ^(if supported^)
 	ECHO. --m32          : force 32-bit binary ^(if supported^)
 	ECHO. --m64          : force 64-bit binary ^(if supported^)
@@ -89,8 +87,6 @@ IF [%1]==[] (
 	SET static=1
 ) ELSE IF [%1]==[--with-mt] (
 	SET mt=1
-) ELSE IF [%1]==[--with-claspre] (
-	SET claspre=1
 ) ELSE IF [%1]==[--m32] (
 	SET machine=32
 ) ELSE IF [%1]==[--m64] (
@@ -148,7 +144,7 @@ IF %mt%==0 (
 	SET LDLIBS=-ltbb 
 	SET BUILDPATH=%BUILDPATH%_mt
 )
-SET CXXFLAGS=%CXXFLAGS% -DWITH_CLASPRE=%claspre%
+SET CXXFLAGS=%CXXFLAGS%
 IF %static%==1 (
 	SET LDFLAGS=%LDFLAGS% -static
 	SET BUILDPATH=%BUILDPATH%_static
@@ -173,7 +169,7 @@ MKDIR "%BUILDPATH%\bin"
 MKDIR "%BUILDPATH%\libclasp\lib"
 MKDIR "%BUILDPATH%\libprogram_opts\lib"
 SET ROOTPATH=../..
-SET TARGET=bin/clasp.exe
+SET TARGET=bin/claspre.exe
 SET LIB_CLASP=libclasp
 SET LIB_OPTS=libprogram_opts
 cd "%BUILDPATH%"
@@ -236,11 +232,11 @@ ECHO.
 ECHO Configuration successfully written to %BUILDPATH%.
 ECHO Make flags written to "%BUILDPATH%\FLAGS".
 ECHO.
-ECHO To compile clasp type:
+ECHO To compile claspre type:
 ECHO   cd "%BUILDPATH%"
 ECHO   make
 ECHO.
-ECHO To install clasp afterwards type:
+ECHO To install claspre afterwards type:
 ECHO   make install
 ECHO or copy "%BUILDPATH%\%TARGET%" to a directory of your choice.
 IF EXIST "%INSTALLPATH%" goto skip_warn

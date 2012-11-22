@@ -1,23 +1,23 @@
 // 
-// Copyright (c) 2006-2007, Benjamin Kaufmann
+// Copyright (c) 2012, Benjamin Kaufmann
 // 
-// This file is part of Clasp. See http://www.cs.uni-potsdam.de/clasp/ 
+// This file is part of Claspre. See http://potassco.sourceforge.net/
 // 
-// Clasp is free software; you can redistribute it and/or modify
+// Claspre is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
 // 
-// Clasp is distributed in the hope that it will be useful,
+// Claspre is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License
-// along with Clasp; if not, write to the Free Software
+// along with Claspre; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
-#include "clasp_app.h"
+#include "claspre_app.h"
 /////////////////////////////////////////////////////////////////////////////////////////
 // main - entry point
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -38,5 +38,5 @@ int main(int argc, char** argv) {
 	_CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
 	_CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
 #endif
-	return Clasp::Application::instance().run(argc, argv);
+	return Claspre::Application::instance().run(argc, argv);
 }

@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\clasp.exe"
+				OutputFile="$(OutDir)\claspre.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\clasp.exe"
+				OutputFile="$(OutDir)\claspre.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -213,7 +213,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\clasp.exe"
+				OutputFile="$(OutDir)\claspre.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -292,7 +292,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tbb-static.lib"
-				OutputFile="$(OutDir)\clasp.exe"
+				OutputFile="$(OutDir)\claspre.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -336,15 +336,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\app\clasp_app.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\app\clasp_options.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\app\clasp_output.cpp"
+				RelativePath="..\..\..\..\app\claspre_app.cpp"
 				>
 			</File>
 			<File
@@ -362,15 +354,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\app\clasp_app.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\app\clasp_options.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\app\clasp_output.h"
+				RelativePath="..\..\..\..\app\claspre_app.h"
 				>
 			</File>
 		</Filter>

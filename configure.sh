@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # OPTIONS
-claspre=0
 static=0
 machine=0
 mt=0
@@ -36,9 +35,6 @@ while [[ $# > 0 ]]; do
 			;;
 		"--static")
 			static=1
-			;;
-		"--with-claspre")
-			claspre=1
 			;;
 		"--with-mt")
 			mt=1
@@ -91,7 +87,6 @@ while [[ $# > 0 ]]; do
 			echo 
 			echo "  --with-mt          : enable multi-thread support (see below)"
 			echo "  --set-rpath        : store path to shared libraries in binary header"
-			echo "  --with-claspre     : enable claspre features in clasp"
 			echo "  --static           : link statically (if supported)"
 			echo "  --m32              : force 32-bit binary (if supported)"
 			echo "  --m64              : force 64-bit binary (if supported)"
@@ -175,7 +170,7 @@ else
 	BUILDPATH="${BUILDPATH}_mt"
 fi
 
-CXXFLAGS="${CXXFLAGS} -DWITH_CLASPRE=${claspre}"
+CXXFLAGS="${CXXFLAGS}"
 if [[ $static == 1 ]]; then
 	LDFLAGS="${LDFLAGS} -static"
 	BUILDPATH="${BUILDPATH}_static"
@@ -224,7 +219,7 @@ cat $PRO_MAKES >> Makefile
 # write project config
 touch  .CONFIG
 echo "PROJECT_ROOT := $ROOTPATH"            >> .CONFIG
-echo "TARGET       := bin/clasp"            >> .CONFIG
+echo "TARGET       := bin/claspre"          >> .CONFIG
 echo "FLAGS        := FLAGS"                >> .CONFIG
 echo "SOURCE_DIR   := \$(PROJECT_ROOT)/app" >> .CONFIG
 echo "INCLUDE_DIR  := \$(PROJECT_ROOT)/app" >> .CONFIG
@@ -260,13 +255,13 @@ echo
 echo "Configuration successfully written to ${BUILDPATH}."
 echo "Make flags written to ${BUILDPATH}/FLAGS."
 echo
-echo "To compile clasp type:"
+echo "To compile claspre type:"
 echo "  cd ${BUILDPATH}"
 echo "  make"
 echo
-echo "To install clasp afterwards type:"
+echo "To install claspre afterwards type:"
 echo "  make install"
-echo "or copy '${BUILDPATH}/clasp' to a directory of your choice."
+echo "or copy '${BUILDPATH}/claspre' to a directory of your choice."
 if [ ! -d "$INSTALLPATH" ]; then
 echo 
 echo "Note: install path '$INSTALLPATH' does not exist"
