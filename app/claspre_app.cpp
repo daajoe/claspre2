@@ -122,6 +122,8 @@ bool Options::validateOptions(const ProgramOptions::ParsedOptions& parsed, Progr
 		clasp.solve.limit = Clasp::SolveLimits(UINT64_MAX, 4);
 	}
 	else {
+		if (limit.first  == 0) { limit.first = -1; }
+		if (limit.second == 0) { limit.second= -1; }
 		clasp.solve.limit = Clasp::SolveLimits(static_cast<uint64>(limit.first), static_cast<uint64>(limit.second));
 	}
 	return true;
