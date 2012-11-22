@@ -131,7 +131,7 @@ private:
 	void    initOptions(ProgramOptions::OptionContext& root) {
 		app_.initOptions(root);
 	}
-	bool    validateOptions(const ProgramOptions::OptionContext& root, const ProgramOptions::ParsedOptions& vm, ProgramOptions::Messages& m) {
+	bool    validateOptions(const ProgramOptions::OptionContext&, const ProgramOptions::ParsedOptions& vm, ProgramOptions::Messages& m) {
 		return app_.validateOptions(vm, m);
 	}
 	// -------------------------------------------------------------------------------------------
