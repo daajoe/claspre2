@@ -37,7 +37,7 @@ namespace Claspre {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 // clasp is done - write result
-void Output::onExit(const Result& r) {
+void Output::onExit(const Solver& s, const Result& r) {
 
 	//printDynamic(s); TODO: ???
 
@@ -415,7 +415,7 @@ void Application::printResult(int signal) {
 	r.unsatTime = r.complete && r.solveTime-ttl >= 0.001 ? r.solveTime-ttl : 0.0;
 	r.cpuTime   = std::max(cpuTotalTime_.total(), 0.0);
 	
-	out_->onExit(r);
+	out_->onExit(*app_.clasp.ctx.master(), r);
 }
 
 // State-transition callback called by ClaspFacade.

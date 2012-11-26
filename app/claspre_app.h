@@ -90,7 +90,7 @@ public:
 		: opts_(o)
 		, facade_(f) {}
 	// called once solving has finished
-	void onExit(const Result& r);
+	void onExit(const Solver& s, const Result& r);
 	// called on each state change (read->preprocess->solve)
 	void onState(bool enter);
 	// called once the solver is ready to solve
