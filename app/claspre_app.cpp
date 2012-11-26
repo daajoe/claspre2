@@ -27,6 +27,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <climits>
+#include <math.h>
 #if !defined(_WIN32)
 #include <unistd.h> // for _exit
 #endif
@@ -39,8 +40,22 @@ namespace Claspre {
 // clasp is done - write result
 void Output::onExit(const Solver& s, const Result& r) {
 
-	//printDynamic(s); TODO: ???
+	printDynamic(s);
 
+	if (s.sharedContext()->enumerator()->minimize()) {
+		printf(",\n");
+		printf(" \"Optimization\": {\n");
+		printf("  \"Avg_Improvement\": %.4f,\n", ostats.avg_impr);
+		double var_impr = s.stats.models > 1 ? ostats.var_impr / (s.stats.models - 1): 0;
+		printf("  \"Stdev_Improvement\": %.4f,\n", sqrt(var_impr));
+		printf("  \"Var_Coeff_Improvement\": %.4f,\n", sqrt(var_impr) / ostats.avg_impr);
+		printf("  \"Avg_Ratio_Improvement\": %.4f,\n", ostats.avg_ratio_impr);
+		double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
+		printf("  \"Stdev_Ratio_Improvement\": %.4f,\n", sqrt(var_ration_impr));
+		printf("  \"Var_Coeff_Ratio_Improvement\": %.4f,\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
+		printf("  \"Ratio_Worst_Best\": %.4f\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
+		printf(" }\n");
+	}
 	printf("}\n");
 //	printf("Times:\n");
 //	printf("  Total: %.3f\n", r.totalTime);
@@ -54,7 +69,7 @@ void Output::onState(bool enter) {
 	//TODO: Nothing to do here?
 	// <TBD>
 	if (facade_.state() == ClaspFacade::state_read && enter) {
-		printf("Reading from %s\n", opts_.input[0].c_str());
+		//printf("Reading from %s\n", opts_.input[0].c_str());
 	}
 	if (facade_.state() == ClaspFacade::state_preprocess && enter) {
 		//printf("Preprocessing\n");
@@ -73,40 +88,41 @@ void Output::onProgramPrepared(const Solver& s) {
 		uint32 sccs  = logicProgram->sccs != PrgNode::noScc ? logicProgram->sccs : 0;
 
 		printf(" \"After_Preprocessing\": {\n");
-		printf("  \"Tight\": %" PRIu32 ",\n",  tight);
-		printf("  \"Problem_Variables\": %" PRIu32 ",\n",  s.numVars());
-		printf("  \"Free_Problem_Variables\": %" PRIu32 ",\n",  s.numFreeVars());
-		printf("  \"Assigned_Problem_Variables\": %" PRIu32 ",\n",  s.numAssignedVars());
-		printf("  \"Constraints\": %" PRIu32 ",\n",  s.numConstraints());
-		printf("  \"Created_Bodies\": %" PRIu32 ",\n", logicProgram->bodies);
-		printf("  \"Program_Atoms\": %" PRIu32 ",\n", logicProgram->atoms);
-		printf("  \"SCCS\": %" PRIu32 ",\n", logicProgram->sccs);
-		printf("  \"Non-trivial_SCCS\": %" PRIu32 ",\n", sccs);
-		printf("  \"Nodes_in_Positive_BADG\": %" PRIu32 ",\n", logicProgram->ufsNodes);
-		printf("  \"Rules\": %" PRIu32 ",\n", logicProgram->rules[0]);
-		printf("  \"Normal_Rules\": %" PRIu32 ",\n", logicProgram->rules[1]);
-		printf("  \"Cardinality_Rules\": %" PRIu32 ",\n", logicProgram->rules[2]);
-		printf("  \"Choice_Rules\": %" PRIu32 ",\n", logicProgram->rules[3]);
-		printf("  \"Weight_Rules\": %" PRIu32 ",\n", logicProgram->rules[5]);
-		printf("  \"Optimization_Rules\": %" PRIu32 ",\n", logicProgram->rules[6]);
-		printf("  \"Equivalences\": %" PRIu32 ",\n", logicProgram->sumEqs());
-		printf("  \"Atom-Atom_Equivalences\": %" PRIu32 ",\n", logicProgram->eqs[0]);
-		printf("  \"Body-Body_Equivalences\": %" PRIu32 ",\n", logicProgram->eqs[1]);
-		printf("  \"Other_Equivalences\": %" PRIu32 ",\n", logicProgram->eqs[2]);
+		printf("  \"Tight\": %u,\n",  tight);
+		printf("  \"Problem_Variables\": %u,\n",  s.numVars());
+		printf("  \"Free_Problem_Variables\": %u,\n",  s.numFreeVars());
+		printf("  \"Assigned_Problem_Variables\": %u,\n",  s.numAssignedVars());
+		printf("  \"Constraints\": %u,\n",  s.numConstraints());
+		printf("  \"Created_Bodies\": %u,\n", logicProgram->bodies);
+		printf("  \"Program_Atoms\": %u,\n", logicProgram->atoms);
+		printf("  \"SCCS\": %u,\n", logicProgram->sccs);
+		printf("  \"Non-trivial_SCCS\": %u,\n", sccs);
+		printf("  \"Nodes_in_Positive_BADG\": %u,\n", logicProgram->ufsNodes);
+		printf("  \"Rules\": %u,\n", logicProgram->rules[0]);
+		printf("  \"Normal_Rules\": %u,\n", logicProgram->rules[1]);
+		printf("  \"Cardinality_Rules\": %u,\n", logicProgram->rules[2]);
+		printf("  \"Choice_Rules\": %u,\n", logicProgram->rules[3]);
+		printf("  \"Weight_Rules\": %u,\n", logicProgram->rules[5]);
+		printf("  \"Optimization_Rules\": %u,\n", logicProgram->rules[6]);
+		printf("  \"Equivalences\": %u,\n", logicProgram->sumEqs());
+		printf("  \"Atom-Atom_Equivalences\": %u,\n", logicProgram->eqs[0]);
+		printf("  \"Body-Body_Equivalences\": %u,\n", logicProgram->eqs[1]);
+		printf("  \"Other_Equivalences\": %u,\n", logicProgram->eqs[2]);
 
 		// Shared Context Stats
-		printf("  \"Binary_Constraints\": %" PRIu32 ",\n",  s.sharedContext()->numBinary());
-		printf("  \"Ternary_Constraints\": %" PRIu32 ",\n",  s.sharedContext()->numTernary());
-		printf("  \"Other_Constraints\": %" PRIu32 ",\n",  s.numConstraints() - s.sharedContext()->numTernary());
+		printf("  \"Binary_Constraints\": %u,\n",  s.sharedContext()->numBinary());
+		printf("  \"Ternary_Constraints\": %u,\n",  s.sharedContext()->numTernary());
+		printf("  \"Other_Constraints\": %u\n",  s.numConstraints() - s.sharedContext()->numTernary());
 
 		//TODO: No rule translation stats?
-		printf(" },\n");
+		printf(" }\n");
 
 	}
 }
 
 void Output::onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit) {
 	printDynamic(s);
+	printf("  ,\n");
 }
 
 void Output::printDynamic(const Solver& s) {
@@ -118,8 +134,8 @@ void Output::printDynamic(const Solver& s) {
 		printf("  \"Models\" : %" PRIu64 ",\n", stats.models);	//for optimization probs
 		printf("  \"Choices\" : %" PRIu64 ",\n", stats.choices);
 		printf("  \"Analyed_Conflicts\" : %" PRIu64 ",\n", stats.analyzed);
-		printf("  \"Avg_Conflict_Levels\" : %.4f,\n", static_cast<double>(stats.sumCfl) / stats.conflicts); //TODO: stats.conflicts or stats.analyzed?
-		printf("  \"Avg_LBD_Levels\" : %.4f,\n", static_cast<double>(stats.sumLbd) / stats.conflicts);
+		printf("  \"Avg_Conflict_Levels\" : %.4f,\n", stats.avgCfl());
+		printf("  \"Avg_LBD_Levels\" : %.4f,\n", stats.avgLbd());
 		printf("  \"Learnt_from_Conflict\" : %" PRIu64 ",\n", stats.learnts[0]);
 		printf("  \"Learnt_from_Loop\" : %" PRIu64 ",\n", stats.learnts[1]); //unfounded set checking
 		printf("  \"Learnt_from_Other\" : %" PRIu64 ",\n", stats.learnts[2]);
@@ -127,18 +143,18 @@ void Output::printDynamic(const Solver& s) {
 		printf("  \"Literals_in_Loop_Nogoods\" : %" PRIu64 ",\n", stats.lits[1]); //unfounded set checking
 		printf("  \"Literals_in_Other_Nogoods\" : %" PRIu64 ",\n", stats.lits[2]);
 		printf("  \"Removed_Nogood\" : %" PRIu64 ",\n", stats.deleted);
-		printf("  \"Learnt_Binary\" : %" PRIu32 ",\n", stats.binary);
-		printf("  \"Learnt_Ternary\" : %" PRIu32 ",\n", stats.ternary);
+		printf("  \"Learnt_Binary\" : %u,\n", stats.binary);
+		printf("  \"Learnt_Ternary\" : %u,\n", stats.ternary);
 		// Jump Stats
 		const JumpStats* jstats = stats.jumps;
 		printf("  \"Decision_Literals_Models\" : %" PRIu64 ",\n", jstats->modLits); //for optimization probs
 		printf("  \"Skipped_Levels_while_Backjumping\" : %" PRIu64 ",\n", jstats->jumpSum);
-		printf("  \"Longest_Backjumping\" : %" PRIu32 ",\n", jstats->maxJump);
+		printf("  \"Longest_Backjumping\" : %u,\n", jstats->maxJump);
 		// Averages Stats
 		const SumQueue* sstats = stats.queue;
 		printf("  \"Running_Avg_Conflictlevel\" : %.4f,\n", sstats->avgCfl());
 		printf("  \"Running_Avg_LBD\" : %.4f\n", sstats->avgLbd());
-		printf(" },\n");
+		printf(" }\n");
 	}
 }
 
@@ -149,7 +165,7 @@ void Output::onDeletion(const Solver& s, uint64 conflictLimit, uint32 learntLimi
 
 // called on each model
 void Output::onModel(const Solver& s, const Clasp::Enumerator& en) {
-	printf("Model %" PRIu64 " on DL: %u\n", en.enumerated, s.decisionLevel());
+	/*printf("Model %" PRIu64 " on DL: %u\n", en.enumerated, s.decisionLevel());
 	if (en.minimize()) {
 		const SharedMinimizeData::SumVec& opt = en.minimize()->optimum()->opt;
 		printf("Opt: %" PRId64, opt[0]);
@@ -157,6 +173,32 @@ void Output::onModel(const Solver& s, const Clasp::Enumerator& en) {
 			printf(" %" PRId64, opt[i]);
 		}
 		printf("\n");
+	}*/
+	if (en.minimize()) {
+		const SharedMinimizeData::SumVec& opt = en.minimize()->optimum()->opt;
+		uint64 index = en.enumerated;
+		uint64 quality = opt[0];
+		if (index == 1) {
+			ostats.avg_impr  = 0.0;
+			ostats.avg_ratio_impr = 0.0;
+			ostats.var_impr = 0.0;
+			ostats.first_quality = quality;
+		}
+		if (index > 1) {
+			uint64 impr = ostats.last_quality - quality;
+			double delta = impr - ostats.avg_impr;
+			ostats.avg_impr = ostats.avg_impr + delta / static_cast<double>(index - 1.0);
+			ostats.var_impr = ostats.var_impr + delta * (impr - ostats.avg_impr);
+
+			double ratio_impr = static_cast<double>(ostats.last_quality) / quality;
+			double delta_ratio = ratio_impr - ostats.avg_ratio_impr;
+			ostats.avg_ratio_impr = ostats.avg_ratio_impr + delta_ratio / static_cast<double>(index - 1.0);
+			ostats.var_ratio_impr = ostats.var_ratio_impr + delta_ratio * (impr - ostats.avg_ratio_impr);
+
+
+		}
+		ostats.last_quality = quality;
+
 	}
 }
 /////////////////////////////////////////////////////////////////////////////////////////

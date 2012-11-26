@@ -86,6 +86,15 @@ public:
 		int    signal;
 		bool   complete;
 	};
+	struct OptimizationStats {
+		double avg_impr;
+		double avg_ratio_impr;
+		double var_impr;
+		double var_ratio_impr;
+		double first_quality;
+		double last_quality;
+
+	};
 	explicit Output(const Options& o, const ClaspFacade& f)
 		: opts_(o)
 		, facade_(f) {}
@@ -108,6 +117,7 @@ private:
 	typedef Clasp::Input::Format InputFormat;
 	const Options&     opts_;
 	const ClaspFacade& facade_;
+	OptimizationStats ostats;
 	// <TBD>
 	// add more data here
 };
