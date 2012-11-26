@@ -101,6 +101,8 @@ public:
 	void onDeletion(const Solver& s, uint64 conflictLimit, uint32 learntLimit);
 	// called on each model
 	void onModel(const Solver& s, const Clasp::Enumerator& en);
+	// print dynamic features
+	void printDynamic(const Solver& s);
 private:
 	Output& operator=(const Output&);
 	typedef Clasp::Input::Format InputFormat;

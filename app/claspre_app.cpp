@@ -38,45 +38,110 @@ namespace Claspre {
 
 // clasp is done - write result
 void Output::onExit(const Result& r) {
-	// <TBD>
-	// add your code here
-	// <TBD>
-	printf("Times:\n");
-	printf("  Total: %.3f\n", r.totalTime);
-	printf("  Solve: %.3f\n", r.solveTime);
+
+	//printDynamic(s); TODO: ???
+
+	printf("}\n");
+//	printf("Times:\n");
+//	printf("  Total: %.3f\n", r.totalTime);
+//	printf("  Solve: %.3f\n", r.solveTime);
 }
 
 // state change in clasp
 void Output::onState(bool enter) {
 	// <TBD>
 	// add your code here
+	//TODO: Nothing to do here?
 	// <TBD>
 	if (facade_.state() == ClaspFacade::state_read && enter) {
 		printf("Reading from %s\n", opts_.input[0].c_str());
 	}
+	if (facade_.state() == ClaspFacade::state_preprocess && enter) {
+		//printf("Preprocessing\n");
+	}
+
 }
 
 // preprocessing done
 void Output::onProgramPrepared(const Solver& s) {
-	printf("Preprocessing done!\n");
-	printf("Vars: %u\n", s.numVars());
-	printf("Cons: %u\n", s.numConstraints());
+	//printf("Preprocessing done!\n");
+	printf("{\n");
 	const PreproStats* logicProgram = facade_.api() ? &facade_.api()->stats : 0;
 	if (logicProgram) {
 		// ASP stats
+		uint32 tight = logicProgram->sccs == 0 || logicProgram->sccs == PrgNode::noScc;
+		uint32 sccs  = logicProgram->sccs != PrgNode::noScc ? logicProgram->sccs : 0;
+
+		printf(" \"After_Preprocessing\": {\n");
+		printf("  \"Tight\": %" PRIu32 ",\n",  tight);
+		printf("  \"Problem_Variables\": %" PRIu32 ",\n",  s.numVars());
+		printf("  \"Free_Problem_Variables\": %" PRIu32 ",\n",  s.numFreeVars());
+		printf("  \"Assigned_Problem_Variables\": %" PRIu32 ",\n",  s.numAssignedVars());
+		printf("  \"Constraints\": %" PRIu32 ",\n",  s.numConstraints());
+		printf("  \"Created_Bodies\": %" PRIu32 ",\n", logicProgram->bodies);
+		printf("  \"Program_Atoms\": %" PRIu32 ",\n", logicProgram->atoms);
+		printf("  \"SCCS\": %" PRIu32 ",\n", logicProgram->sccs);
+		printf("  \"Non-trivial_SCCS\": %" PRIu32 ",\n", sccs);
+		printf("  \"Nodes_in_Positive_BADG\": %" PRIu32 ",\n", logicProgram->ufsNodes);
+		printf("  \"Rules\": %" PRIu32 ",\n", logicProgram->rules[0]);
+		printf("  \"Normal_Rules\": %" PRIu32 ",\n", logicProgram->rules[1]);
+		printf("  \"Cardinality_Rules\": %" PRIu32 ",\n", logicProgram->rules[2]);
+		printf("  \"Choice_Rules\": %" PRIu32 ",\n", logicProgram->rules[3]);
+		printf("  \"Weight_Rules\": %" PRIu32 ",\n", logicProgram->rules[5]);
+		printf("  \"Optimization_Rules\": %" PRIu32 ",\n", logicProgram->rules[6]);
+		printf("  \"Equivalences\": %" PRIu32 ",\n", logicProgram->sumEqs());
+		printf("  \"Atom-Atom_Equivalences\": %" PRIu32 ",\n", logicProgram->eqs[0]);
+		printf("  \"Body-Body_Equivalences\": %" PRIu32 ",\n", logicProgram->eqs[1]);
+		printf("  \"Other_Equivalences\": %" PRIu32 ",\n", logicProgram->eqs[2]);
+
+		// Shared Context Stats
+		printf("  \"Binary_Constraints\": %" PRIu32 ",\n",  s.sharedContext()->numBinary());
+		printf("  \"Ternary_Constraints\": %" PRIu32 ",\n",  s.sharedContext()->numTernary());
+		printf("  \"Other_Constraints\": %" PRIu32 ",\n",  s.numConstraints() - s.sharedContext()->numTernary());
+
+		//TODO: No rule translation stats?
+		printf(" },\n");
+
 	}
-	// <TBD>
-	// gather "pre-solve" stats here
-	// <TBD>
 }
 
 void Output::onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit) {
-	const SolveStats& stats = s.stats;
-	printf("(Re)-Start %" PRIu64 " with limits (%" PRIu64 ", %u)\n", stats.restarts, conflictLimit, learntLimit);
-	// <TBD>
-	// gather "dynamic" stats here
-	// <TBD>
+	printDynamic(s);
 }
+
+void Output::printDynamic(const Solver& s) {
+	const SolveStats& stats = s.stats;
+	//printf("(Re)-Start %" PRIu64 " with limits (%" PRIu64 ", %u)\n", stats.restarts, conflictLimit, learntLimit);
+	if (stats.restarts != 0) {
+		//Core Stats
+		printf(" \"Restart%" PRIu64 "\" :{\n", stats.restarts);
+		printf("  \"Models\" : %" PRIu64 ",\n", stats.models);	//for optimization probs
+		printf("  \"Choices\" : %" PRIu64 ",\n", stats.choices);
+		printf("  \"Analyed_Conflicts\" : %" PRIu64 ",\n", stats.analyzed);
+		printf("  \"Avg_Conflict_Levels\" : %.4f,\n", static_cast<double>(stats.sumCfl) / stats.conflicts); //TODO: stats.conflicts or stats.analyzed?
+		printf("  \"Avg_LBD_Levels\" : %.4f,\n", static_cast<double>(stats.sumLbd) / stats.conflicts);
+		printf("  \"Learnt_from_Conflict\" : %" PRIu64 ",\n", stats.learnts[0]);
+		printf("  \"Learnt_from_Loop\" : %" PRIu64 ",\n", stats.learnts[1]); //unfounded set checking
+		printf("  \"Learnt_from_Other\" : %" PRIu64 ",\n", stats.learnts[2]);
+		printf("  \"Literals_in_Conflict_Nogoods\" : %" PRIu64 ",\n", stats.lits[0]);
+		printf("  \"Literals_in_Loop_Nogoods\" : %" PRIu64 ",\n", stats.lits[1]); //unfounded set checking
+		printf("  \"Literals_in_Other_Nogoods\" : %" PRIu64 ",\n", stats.lits[2]);
+		printf("  \"Removed_Nogood\" : %" PRIu64 ",\n", stats.deleted);
+		printf("  \"Learnt_Binary\" : %" PRIu32 ",\n", stats.binary);
+		printf("  \"Learnt_Ternary\" : %" PRIu32 ",\n", stats.ternary);
+		// Jump Stats
+		const JumpStats* jstats = stats.jumps;
+		printf("  \"Decision_Literals_Models\" : %" PRIu64 ",\n", jstats->modLits); //for optimization probs
+		printf("  \"Skipped_Levels_while_Backjumping\" : %" PRIu64 ",\n", jstats->jumpSum);
+		printf("  \"Longest_Backjumping\" : %" PRIu32 ",\n", jstats->maxJump);
+		// Averages Stats
+		const SumQueue* sstats = stats.queue;
+		printf("  \"Running_Avg_Conflictlevel\" : %.4f,\n", sstats->avgCfl());
+		printf("  \"Running_Avg_LBD\" : %.4f\n", sstats->avgLbd());
+		printf(" },\n");
+	}
+}
+
 void Output::onDeletion(const Solver& s, uint64 conflictLimit, uint32 learntLimit) {
 	printf("Deletion: next limits (%" PRIu64 ", %u)\n", conflictLimit, learntLimit);
 	// <TBD>
