@@ -93,6 +93,7 @@ void Output::onProgramPrepared(const Solver& s) {
 		printf("  [\"Free_Problem_Variables\", %u],\n",  s.numFreeVars());
 		printf("  [\"Assigned_Problem_Variables\", %u],\n",  s.numAssignedVars());
 		printf("  [\"Constraints\", %u],\n",  s.numConstraints());
+		printf("  [\"Constraints/Vars\", %.4f],\n",  static_cast<double>(s.numConstraints()) / s.numVars());
 		printf("  [\"Created_Bodies\", %u],\n", logicProgram->bodies);
 		printf("  [\"Program_Atoms\", %u],\n", logicProgram->atoms);
 		printf("  [\"SCCS\", %u],\n", logicProgram->sccs);
@@ -104,17 +105,36 @@ void Output::onProgramPrepared(const Solver& s) {
 		printf("  [\"Choice_Rules\", %u],\n", logicProgram->rules[3]);
 		printf("  [\"Weight_Rules\", %u],\n", logicProgram->rules[5]);
 		printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
+		printf("  [\"Frac_Normal_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[1]) / logicProgram->rules[0]);
+		printf("  [\"Frac_Cardinality_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[2]) / logicProgram->rules[0]);
+		printf("  [\"Frac_Choice_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[3]) / logicProgram->rules[0]);
+		printf("  [\"Frac_Weight_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[5]) / logicProgram->rules[0]);
+		printf("  [\"Frac_Optimization_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
 		printf("  [\"Equivalences\", %u],\n", logicProgram->sumEqs());
 		printf("  [\"Atom-Atom_Equivalences\", %u],\n", logicProgram->eqs[0]);
 		printf("  [\"Body-Body_Equivalences\", %u],\n", logicProgram->eqs[1]);
 		printf("  [\"Other_Equivalences\", %u],\n", logicProgram->eqs[2]);
+		if (logicProgram->sumEqs() > 0) {
+			printf("  [\"Frac_Atom-Atom_Equivalences\", %.4f],\n",  static_cast<double>(logicProgram->eqs[0]) /logicProgram->sumEqs());
+			printf("  [\"Frac_Body-Body_Equivalences\", %.4f],\n",  static_cast<double>(logicProgram->eqs[1]) /logicProgram->sumEqs());
+			printf("  [\"Frac_Other_Equivalences\", %.4f],\n",  static_cast<double>(logicProgram->eqs[2]) /logicProgram->sumEqs());
+		}
+		else {
+			printf("  [\"Frac_Atom-Atom_Equivalences\", 0],\n");
+			printf("  [\"Frac_Body-Body_Equivalences\", 0],\n");
+			printf("  [\"Frac_Other_Equivalences\", 0],\n");
+		}
+
 
 		// Shared Context Stats
 		printf("  [\"Binary_Constraints\", %u],\n",  s.sharedContext()->numBinary());
 		printf("  [\"Ternary_Constraints\", %u],\n",  s.sharedContext()->numTernary());
-		printf("  [\"Other_Constraints\", %u]\n",  s.numConstraints() - s.sharedContext()->numTernary());
+		uint32 other_const = s.numConstraints() - s.sharedContext()->numTernary();
+		printf("  [\"Other_Constraints\", %u],\n",  other_const);
+		printf("  [\"Frac_Binary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numBinary()) / s.sharedContext()->numConstraints());
+		printf("  [\"Frac_Ternary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numTernary()) / s.sharedContext()->numConstraints());
+		printf("  [\"Frac_Other_Constraints\", %.4f]\n",  static_cast<double>(other_const) / s.sharedContext()->numConstraints());
 
-		//TODO: No rule translation stats?
 		printf(" ]\n");
 
 	}
@@ -134,21 +154,35 @@ void Output::printDynamic(const Solver& s) {
 		printf("  [\"Models\" , %" PRIu64 "],\n", stats.models);	//for optimization probs
 		printf("  [\"Choices\" , %" PRIu64 "],\n", stats.choices);
 		printf("  [\"Analyed_Conflicts\" , %" PRIu64 "],\n", stats.analyzed);
+		printf("  [\"Conflicts/Choices\" , %.4f],\n", static_cast<double>(stats.analyzed) / stats.choices);
 		printf("  [\"Avg_Conflict_Levels\" , %.4f],\n", stats.avgCfl());
 		printf("  [\"Avg_LBD_Levels\" , %.4f],\n", stats.avgLbd());
 		printf("  [\"Learnt_from_Conflict\" , %" PRIu64 "],\n", stats.learnts[0]);
 		printf("  [\"Learnt_from_Loop\" , %" PRIu64 "],\n", stats.learnts[1]); //unfounded set checking
 		printf("  [\"Learnt_from_Other\" , %" PRIu64 "],\n", stats.learnts[2]);
+		uint64 sum_learnts = stats.learnts[0] + stats.learnts[1] + stats.learnts[2];
+		printf("  [\"Frac_Learnt_from_Conflict\" , %.4f],\n", static_cast<double>(stats.learnts[0]) / sum_learnts);
+		printf("  [\"Frac_Learnt_from_Loop\" , %.4f],\n", static_cast<double>(stats.learnts[1]) / sum_learnts); //unfounded set checking
+		printf("  [\"Frac_Learnt_from_Other\" , %.4f],\n", static_cast<double>(stats.learnts[2]) / sum_learnts);
 		printf("  [\"Literals_in_Conflict_Nogoods\" , %" PRIu64 "],\n", stats.lits[0]);
 		printf("  [\"Literals_in_Loop_Nogoods\" , %" PRIu64 "],\n", stats.lits[1]); //unfounded set checking
 		printf("  [\"Literals_in_Other_Nogoods\" , %" PRIu64 "],\n", stats.lits[2]);
+		uint64 sum_lits = stats.lits[0] + stats.lits[1] +stats.lits[2];
+		printf("  [\"Literals_in_Conflict_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[0]) / sum_lits);
+		printf("  [\"Literals_in_Loop_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[1]) / sum_lits); //unfounded set checking
+		printf("  [\"Literals_in_Other_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[2]) / sum_lits);
 		printf("  [\"Removed_Nogood\" , %" PRIu64 "],\n", stats.deleted);
 		printf("  [\"Learnt_Binary\" , %u],\n", stats.binary);
 		printf("  [\"Learnt_Ternary\" , %u],\n", stats.ternary);
+		printf("  [\"Frac_Removed_Nogood\" , %.4f],\n", static_cast<double>(stats.deleted) / sum_learnts);
+		printf("  [\"Frac_Learnt_Binary\" , %.4f],\n", static_cast<double>(stats.binary) / sum_learnts);
+		printf("  [\"Frac_Learnt_Ternary\" , %.4f],\n", static_cast<double>(stats.ternary) / sum_learnts);
+
 		// Jump Stats
 		const JumpStats* jstats = stats.jumps;
-		printf("  [\"Decision_Literals_Models\" , %" PRIu64 "],\n", jstats->modLits); //for optimization probs
+		printf("  [\"Decision_Literals_Models\" , %" PRIu64 "],\n", jstats->modLits); //for optimization problems
 		printf("  [\"Skipped_Levels_while_Backjumping\" , %" PRIu64 "],\n", jstats->jumpSum);
+		printf("  [\"Avg_Skipped_Levels_while_Backjumping\" , %.4f],\n", static_cast<double>(jstats->jumpSum) / stats.analyzed);
 		printf("  [\"Longest_Backjumping\" , %u],\n", jstats->maxJump);
 		// Averages Stats
 		const SumQueue* sstats = stats.queue;
