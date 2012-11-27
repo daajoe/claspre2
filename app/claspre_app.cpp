@@ -44,17 +44,17 @@ void Output::onExit(const Solver& s, const Result& r) {
 
 	if (s.sharedContext()->enumerator()->minimize()) {
 		printf(",\n");
-		printf(" \"Optimization\": {\n");
-		printf("  \"Avg_Improvement\": %.4f,\n", ostats.avg_impr);
+		printf(" \"Optimization\": [\n");
+		printf("  [\"Avg_Improvement\", %.4f],\n", ostats.avg_impr);
 		double var_impr = s.stats.models > 1 ? ostats.var_impr / (s.stats.models - 1): 0;
-		printf("  \"Stdev_Improvement\": %.4f,\n", sqrt(var_impr));
-		printf("  \"Var_Coeff_Improvement\": %.4f,\n", sqrt(var_impr) / ostats.avg_impr);
-		printf("  \"Avg_Ratio_Improvement\": %.4f,\n", ostats.avg_ratio_impr);
+		printf("  [\"Stdev_Improvement\", %.4f],\n", sqrt(var_impr));
+		printf("  [\"Var_Coeff_Improvement\", %.4f],\n", sqrt(var_impr) / ostats.avg_impr);
+		printf("  [\"Avg_Ratio_Improvement\", %.4f],\n", ostats.avg_ratio_impr);
 		double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
-		printf("  \"Stdev_Ratio_Improvement\": %.4f,\n", sqrt(var_ration_impr));
-		printf("  \"Var_Coeff_Ratio_Improvement\": %.4f,\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
-		printf("  \"Ratio_Worst_Best\": %.4f\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
-		printf(" }\n");
+		printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr));
+		printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
+		printf("  [\"Ratio_Worst_Best\", %.4f]\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
+		printf(" ]\n");
 	}
 	printf("}\n");
 //	printf("Times:\n");
@@ -87,35 +87,35 @@ void Output::onProgramPrepared(const Solver& s) {
 		uint32 tight = logicProgram->sccs == 0 || logicProgram->sccs == PrgNode::noScc;
 		uint32 sccs  = logicProgram->sccs != PrgNode::noScc ? logicProgram->sccs : 0;
 
-		printf(" \"After_Preprocessing\": {\n");
-		printf("  \"Tight\": %u,\n",  tight);
-		printf("  \"Problem_Variables\": %u,\n",  s.numVars());
-		printf("  \"Free_Problem_Variables\": %u,\n",  s.numFreeVars());
-		printf("  \"Assigned_Problem_Variables\": %u,\n",  s.numAssignedVars());
-		printf("  \"Constraints\": %u,\n",  s.numConstraints());
-		printf("  \"Created_Bodies\": %u,\n", logicProgram->bodies);
-		printf("  \"Program_Atoms\": %u,\n", logicProgram->atoms);
-		printf("  \"SCCS\": %u,\n", logicProgram->sccs);
-		printf("  \"Non-trivial_SCCS\": %u,\n", sccs);
-		printf("  \"Nodes_in_Positive_BADG\": %u,\n", logicProgram->ufsNodes);
-		printf("  \"Rules\": %u,\n", logicProgram->rules[0]);
-		printf("  \"Normal_Rules\": %u,\n", logicProgram->rules[1]);
-		printf("  \"Cardinality_Rules\": %u,\n", logicProgram->rules[2]);
-		printf("  \"Choice_Rules\": %u,\n", logicProgram->rules[3]);
-		printf("  \"Weight_Rules\": %u,\n", logicProgram->rules[5]);
-		printf("  \"Optimization_Rules\": %u,\n", logicProgram->rules[6]);
-		printf("  \"Equivalences\": %u,\n", logicProgram->sumEqs());
-		printf("  \"Atom-Atom_Equivalences\": %u,\n", logicProgram->eqs[0]);
-		printf("  \"Body-Body_Equivalences\": %u,\n", logicProgram->eqs[1]);
-		printf("  \"Other_Equivalences\": %u,\n", logicProgram->eqs[2]);
+		printf(" \"After_Preprocessing\": [\n");
+		printf("  [\"Tight\", %u],\n",  tight);
+		printf("  [\"Problem_Variables\", %u],\n",  s.numVars());
+		printf("  [\"Free_Problem_Variables\", %u],\n",  s.numFreeVars());
+		printf("  [\"Assigned_Problem_Variables\", %u],\n",  s.numAssignedVars());
+		printf("  [\"Constraints\", %u],\n",  s.numConstraints());
+		printf("  [\"Created_Bodies\", %u],\n", logicProgram->bodies);
+		printf("  [\"Program_Atoms\", %u],\n", logicProgram->atoms);
+		printf("  [\"SCCS\", %u],\n", logicProgram->sccs);
+		printf("  [\"Non-trivial_SCCS\", %u],\n", sccs);
+		printf("  [\"Nodes_in_Positive_BADG\", %u],\n", logicProgram->ufsNodes);
+		printf("  [\"Rules\", %u],\n", logicProgram->rules[0]);
+		printf("  [\"Normal_Rules\", %u],\n", logicProgram->rules[1]);
+		printf("  [\"Cardinality_Rules\", %u],\n", logicProgram->rules[2]);
+		printf("  [\"Choice_Rules\", %u],\n", logicProgram->rules[3]);
+		printf("  [\"Weight_Rules\", %u],\n", logicProgram->rules[5]);
+		printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
+		printf("  [\"Equivalences\", %u],\n", logicProgram->sumEqs());
+		printf("  [\"Atom-Atom_Equivalences\", %u],\n", logicProgram->eqs[0]);
+		printf("  [\"Body-Body_Equivalences\", %u],\n", logicProgram->eqs[1]);
+		printf("  [\"Other_Equivalences\", %u],\n", logicProgram->eqs[2]);
 
 		// Shared Context Stats
-		printf("  \"Binary_Constraints\": %u,\n",  s.sharedContext()->numBinary());
-		printf("  \"Ternary_Constraints\": %u,\n",  s.sharedContext()->numTernary());
-		printf("  \"Other_Constraints\": %u\n",  s.numConstraints() - s.sharedContext()->numTernary());
+		printf("  [\"Binary_Constraints\", %u],\n",  s.sharedContext()->numBinary());
+		printf("  [\"Ternary_Constraints\", %u],\n",  s.sharedContext()->numTernary());
+		printf("  [\"Other_Constraints\", %u]\n",  s.numConstraints() - s.sharedContext()->numTernary());
 
 		//TODO: No rule translation stats?
-		printf(" }\n");
+		printf(" ]\n");
 
 	}
 }
@@ -130,31 +130,31 @@ void Output::printDynamic(const Solver& s) {
 	//printf("(Re)-Start %" PRIu64 " with limits (%" PRIu64 ", %u)\n", stats.restarts, conflictLimit, learntLimit);
 	if (stats.restarts != 0) {
 		//Core Stats
-		printf(" \"Restart%" PRIu64 "\" :{\n", stats.restarts);
-		printf("  \"Models\" : %" PRIu64 ",\n", stats.models);	//for optimization probs
-		printf("  \"Choices\" : %" PRIu64 ",\n", stats.choices);
-		printf("  \"Analyed_Conflicts\" : %" PRIu64 ",\n", stats.analyzed);
-		printf("  \"Avg_Conflict_Levels\" : %.4f,\n", stats.avgCfl());
-		printf("  \"Avg_LBD_Levels\" : %.4f,\n", stats.avgLbd());
-		printf("  \"Learnt_from_Conflict\" : %" PRIu64 ",\n", stats.learnts[0]);
-		printf("  \"Learnt_from_Loop\" : %" PRIu64 ",\n", stats.learnts[1]); //unfounded set checking
-		printf("  \"Learnt_from_Other\" : %" PRIu64 ",\n", stats.learnts[2]);
-		printf("  \"Literals_in_Conflict_Nogoods\" : %" PRIu64 ",\n", stats.lits[0]);
-		printf("  \"Literals_in_Loop_Nogoods\" : %" PRIu64 ",\n", stats.lits[1]); //unfounded set checking
-		printf("  \"Literals_in_Other_Nogoods\" : %" PRIu64 ",\n", stats.lits[2]);
-		printf("  \"Removed_Nogood\" : %" PRIu64 ",\n", stats.deleted);
-		printf("  \"Learnt_Binary\" : %u,\n", stats.binary);
-		printf("  \"Learnt_Ternary\" : %u,\n", stats.ternary);
+		printf(" \"Restart-%" PRIu64 "\" :[\n", stats.restarts);
+		printf("  [\"Models\" , %" PRIu64 "],\n", stats.models);	//for optimization probs
+		printf("  [\"Choices\" , %" PRIu64 "],\n", stats.choices);
+		printf("  [\"Analyed_Conflicts\" , %" PRIu64 "],\n", stats.analyzed);
+		printf("  [\"Avg_Conflict_Levels\" , %.4f],\n", stats.avgCfl());
+		printf("  [\"Avg_LBD_Levels\" , %.4f],\n", stats.avgLbd());
+		printf("  [\"Learnt_from_Conflict\" , %" PRIu64 "],\n", stats.learnts[0]);
+		printf("  [\"Learnt_from_Loop\" , %" PRIu64 "],\n", stats.learnts[1]); //unfounded set checking
+		printf("  [\"Learnt_from_Other\" , %" PRIu64 "],\n", stats.learnts[2]);
+		printf("  [\"Literals_in_Conflict_Nogoods\" , %" PRIu64 "],\n", stats.lits[0]);
+		printf("  [\"Literals_in_Loop_Nogoods\" , %" PRIu64 "],\n", stats.lits[1]); //unfounded set checking
+		printf("  [\"Literals_in_Other_Nogoods\" , %" PRIu64 "],\n", stats.lits[2]);
+		printf("  [\"Removed_Nogood\" , %" PRIu64 "],\n", stats.deleted);
+		printf("  [\"Learnt_Binary\" , %u],\n", stats.binary);
+		printf("  [\"Learnt_Ternary\" , %u],\n", stats.ternary);
 		// Jump Stats
 		const JumpStats* jstats = stats.jumps;
-		printf("  \"Decision_Literals_Models\" : %" PRIu64 ",\n", jstats->modLits); //for optimization probs
-		printf("  \"Skipped_Levels_while_Backjumping\" : %" PRIu64 ",\n", jstats->jumpSum);
-		printf("  \"Longest_Backjumping\" : %u,\n", jstats->maxJump);
+		printf("  [\"Decision_Literals_Models\" , %" PRIu64 "],\n", jstats->modLits); //for optimization probs
+		printf("  [\"Skipped_Levels_while_Backjumping\" , %" PRIu64 "],\n", jstats->jumpSum);
+		printf("  [\"Longest_Backjumping\" , %u],\n", jstats->maxJump);
 		// Averages Stats
 		const SumQueue* sstats = stats.queue;
-		printf("  \"Running_Avg_Conflictlevel\" : %.4f,\n", sstats->avgCfl());
-		printf("  \"Running_Avg_LBD\" : %.4f\n", sstats->avgLbd());
-		printf(" }\n");
+		printf("  [\"Running_Avg_Conflictlevel\" , %.4f],\n", sstats->avgCfl());
+		printf("  [\"Running_Avg_LBD\" , %.4f]\n", sstats->avgLbd());
+		printf(" ]\n");
 	}
 }
 
