@@ -32,7 +32,7 @@ if __name__=="__main__":
     try:
         feature_dict = json.load(outfile)
     except:
-        print("Features:-512")
+        print("Features: -512")
         sys.exit(-1)
     
     preprocessing_feats = feature_dict["After_Preprocessing"]
