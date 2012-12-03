@@ -170,15 +170,18 @@ void Output::printDynamic(const Solver& s) {
 		printf("  [\"Literals_in_Loop_Nogoods\" , %" PRIu64 "],\n", stats.lits[1]); //unfounded set checking
 		printf("  [\"Literals_in_Other_Nogoods\" , %" PRIu64 "],\n", stats.lits[2]);
 		uint64 sum_lits = stats.lits[0] + stats.lits[1] +stats.lits[2];
-		printf("  [\"Literals_in_Conflict_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[0]) / sum_lits);
-		printf("  [\"Literals_in_Loop_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[1]) / sum_lits); //unfounded set checking
-		printf("  [\"Literals_in_Other_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[2]) / sum_lits);
-		printf("  [\"Removed_Nogood\" , %" PRIu64 "],\n", stats.deleted);
+		printf("  [\"Frac_Literals_in_Conflict_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[0]) / sum_lits);
+		printf("  [\"Frac_Literals_in_Loop_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[1]) / sum_lits); //unfounded set checking
+		printf("  [\"Frac_Literals_in_Other_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[2]) / sum_lits);
+		printf("  [\"Removed_Nogoods\" , %" PRIu64 "],\n", stats.deleted);
 		printf("  [\"Learnt_Binary\" , %u],\n", stats.binary);
 		printf("  [\"Learnt_Ternary\" , %u],\n", stats.ternary);
+		uint64 learnt_others = sum_learnts - stats.binary - stats.ternary;
+		printf("  [\"Learnt_Others\" , %u],\n", learnt_others);
 		printf("  [\"Frac_Removed_Nogood\" , %.4f],\n", static_cast<double>(stats.deleted) / sum_learnts);
 		printf("  [\"Frac_Learnt_Binary\" , %.4f],\n", static_cast<double>(stats.binary) / sum_learnts);
 		printf("  [\"Frac_Learnt_Ternary\" , %.4f],\n", static_cast<double>(stats.ternary) / sum_learnts);
+		printf("  [\"Frac_Learnt_Others\" , %.4f],\n", static_cast<double>(learnt_others) / sum_learnts);
 
 		// Jump Stats
 		const JumpStats* jstats = stats.jumps;
@@ -195,7 +198,7 @@ void Output::printDynamic(const Solver& s) {
 }
 
 void Output::onDeletion(const Solver& s, uint64 conflictLimit, uint32 learntLimit) {
-	printf("Deletion: next limits (%" PRIu64 ", %u)\n", conflictLimit, learntLimit);
+	//printf("Deletion: next limits (%" PRIu64 ", %u)\n", conflictLimit, learntLimit);
 	// <TBD>
 }
 
