@@ -142,15 +142,17 @@ void Output::onProgramPrepared(const Solver& s) {
 
 void Output::onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit) {
 	printDynamic(s);
-	printf("  ,\n");
 }
 
 void Output::printDynamic(const Solver& s) {
 	const SolveStats& stats = s.stats;
 	//printf("(Re)-Start %" PRIu64 " with limits (%" PRIu64 ", %u)\n", stats.restarts, conflictLimit, learntLimit);
-	if (stats.restarts != 0) {
+	static uint64 calls = -1;
+	calls += 1;
+	if (calls != 0) {
 		//Core Stats
-		printf(" \"Restart-%" PRIu64 "\" :[\n", stats.restarts);
+		printf(",\n");
+		printf(" \"Dynamic-%" PRIu64 "\" :[\n", calls);
 		printf("  [\"Models\" , %" PRIu64 "],\n", stats.models);	//for optimization probs
 		printf("  [\"Choices\" , %" PRIu64 "],\n", stats.choices);
 		printf("  [\"Analyed_Conflicts\" , %" PRIu64 "],\n", stats.analyzed);
@@ -327,7 +329,7 @@ void Application::kill(int sig) {
 	if (blocked_ == 0) {
 		blockSignals();         // ignore further signals
 		SCOPE_ALARM_LOCK();
-		INFO_OUT(APP_NAME, "INTERRUPTED by signal!");
+		//INFO_OUT(APP_NAME, "INTERRUPTED by signal!");
 		if (!facade_ || !facade_->terminate()) {
 			if (facade_ && facade_->state() != ClaspFacade::num_states) {
 				if (facade_->state() != ClaspFacade::state_start) { timer_[facade_->state()].stop(); }
