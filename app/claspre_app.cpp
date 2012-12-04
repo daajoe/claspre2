@@ -40,9 +40,13 @@ namespace Claspre {
 // clasp is done - write result
 void Output::onExit(const Solver& s, const Result& r) {
 
-	printDynamic(s);
+	if (not s.sharedContext()->enumerator()->minimize() and s.stats.models == 0) {
+		printDynamic(s);
+	}
 
 	if (s.sharedContext()->enumerator()->minimize()) {
+		printDynamic(s);
+
 		printf(",\n");
 		printf(" \"Optimization\": [\n");
 		printf("  [\"Avg_Improvement\", %.4f],\n", ostats.avg_impr);
@@ -53,7 +57,11 @@ void Output::onExit(const Solver& s, const Result& r) {
 		double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
 		printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr));
 		printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
-		printf("  [\"Ratio_Worst_Best\", %.4f]\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
+		if (ostats.last_quality != 0)
+			printf("  [\"Ratio_Worst_Best\", %.4f]\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
+		else
+			printf("  [\"Ratio_Worst_Best\", 0.0000]\n");
+
 		printf(" ]\n");
 	}
 	printf("}\n");
