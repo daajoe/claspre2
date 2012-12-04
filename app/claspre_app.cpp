@@ -46,23 +46,6 @@ void Output::onExit(const Solver& s, const Result& r) {
 
 	if (s.sharedContext()->enumerator()->minimize()) {
 		printDynamic(s);
-
-		printf(",\n");
-		printf(" \"Optimization\": [\n");
-		printf("  [\"Avg_Improvement\", %.4f],\n", ostats.avg_impr);
-		double var_impr = s.stats.models > 1 ? ostats.var_impr / (s.stats.models - 1): 0;
-		printf("  [\"Stdev_Improvement\", %.4f],\n", sqrt(var_impr));
-		printf("  [\"Var_Coeff_Improvement\", %.4f],\n", sqrt(var_impr) / ostats.avg_impr);
-		printf("  [\"Avg_Ratio_Improvement\", %.4f],\n", ostats.avg_ratio_impr);
-		double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
-		printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr));
-		printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
-		if (ostats.last_quality != 0)
-			printf("  [\"Ratio_Worst_Best\", %.4f]\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
-		else
-			printf("  [\"Ratio_Worst_Best\", 0.0000]\n");
-
-		printf(" ]\n");
 	}
 	printf("}\n");
 //	printf("Times:\n");
@@ -104,20 +87,17 @@ void Output::onProgramPrepared(const Solver& s) {
 		printf("  [\"Constraints/Vars\", %.4f],\n",  static_cast<double>(s.numConstraints()) / s.numVars());
 		printf("  [\"Created_Bodies\", %u],\n", logicProgram->bodies);
 		printf("  [\"Program_Atoms\", %u],\n", logicProgram->atoms);
-		printf("  [\"SCCS\", %u],\n", logicProgram->sccs);
-		printf("  [\"Non-trivial_SCCS\", %u],\n", sccs);
+		printf("  [\"SCCS\", %u],\n", sccs);
 		printf("  [\"Nodes_in_Positive_BADG\", %u],\n", logicProgram->ufsNodes);
 		printf("  [\"Rules\", %u],\n", logicProgram->rules[0]);
 		printf("  [\"Normal_Rules\", %u],\n", logicProgram->rules[1]);
 		printf("  [\"Cardinality_Rules\", %u],\n", logicProgram->rules[2]);
 		printf("  [\"Choice_Rules\", %u],\n", logicProgram->rules[3]);
 		printf("  [\"Weight_Rules\", %u],\n", logicProgram->rules[5]);
-		printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
 		printf("  [\"Frac_Normal_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[1]) / logicProgram->rules[0]);
 		printf("  [\"Frac_Cardinality_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[2]) / logicProgram->rules[0]);
 		printf("  [\"Frac_Choice_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[3]) / logicProgram->rules[0]);
 		printf("  [\"Frac_Weight_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[5]) / logicProgram->rules[0]);
-		printf("  [\"Frac_Optimization_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
 		printf("  [\"Equivalences\", %u],\n", logicProgram->sumEqs());
 		printf("  [\"Atom-Atom_Equivalences\", %u],\n", logicProgram->eqs[0]);
 		printf("  [\"Body-Body_Equivalences\", %u],\n", logicProgram->eqs[1]);
@@ -133,7 +113,6 @@ void Output::onProgramPrepared(const Solver& s) {
 			printf("  [\"Frac_Other_Equivalences\", 0],\n");
 		}
 
-
 		// Shared Context Stats
 		printf("  [\"Binary_Constraints\", %u],\n",  s.sharedContext()->numBinary());
 		printf("  [\"Ternary_Constraints\", %u],\n",  s.sharedContext()->numTernary());
@@ -142,8 +121,15 @@ void Output::onProgramPrepared(const Solver& s) {
 		printf("  [\"Frac_Binary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numBinary()) / s.sharedContext()->numConstraints());
 		printf("  [\"Frac_Ternary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numTernary()) / s.sharedContext()->numConstraints());
 		printf("  [\"Frac_Other_Constraints\", %.4f]\n",  static_cast<double>(other_const) / s.sharedContext()->numConstraints());
-
 		printf(" ]\n");
+
+		if (logicProgram->rules[6] > 0) {
+			printf(",\n");
+			printf(" \"After_Preprocessing_Optimization\": [\n");
+			  printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
+			  printf("  [\"Frac_Optimization_Rules\", %.4f]\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
+			printf(" ]\n");
+		}
 
 	}
 }
@@ -161,26 +147,20 @@ void Output::printDynamic(const Solver& s) {
 		//Core Stats
 		printf(",\n");
 		printf(" \"Dynamic-%" PRIu64 "\" :[\n", calls);
-		printf("  [\"Models\" , %" PRIu64 "],\n", stats.models);	//for optimization probs
 		printf("  [\"Choices\" , %" PRIu64 "],\n", stats.choices);
-		printf("  [\"Analyed_Conflicts\" , %" PRIu64 "],\n", stats.analyzed);
 		printf("  [\"Conflicts/Choices\" , %.4f],\n", static_cast<double>(stats.analyzed) / stats.choices);
 		printf("  [\"Avg_Conflict_Levels\" , %.4f],\n", stats.avgCfl());
 		printf("  [\"Avg_LBD_Levels\" , %.4f],\n", stats.avgLbd());
 		printf("  [\"Learnt_from_Conflict\" , %" PRIu64 "],\n", stats.learnts[0]);
 		printf("  [\"Learnt_from_Loop\" , %" PRIu64 "],\n", stats.learnts[1]); //unfounded set checking
-		printf("  [\"Learnt_from_Other\" , %" PRIu64 "],\n", stats.learnts[2]);
 		uint64 sum_learnts = stats.learnts[0] + stats.learnts[1] + stats.learnts[2];
 		printf("  [\"Frac_Learnt_from_Conflict\" , %.4f],\n", static_cast<double>(stats.learnts[0]) / sum_learnts);
 		printf("  [\"Frac_Learnt_from_Loop\" , %.4f],\n", static_cast<double>(stats.learnts[1]) / sum_learnts); //unfounded set checking
-		printf("  [\"Frac_Learnt_from_Other\" , %.4f],\n", static_cast<double>(stats.learnts[2]) / sum_learnts);
 		printf("  [\"Literals_in_Conflict_Nogoods\" , %" PRIu64 "],\n", stats.lits[0]);
 		printf("  [\"Literals_in_Loop_Nogoods\" , %" PRIu64 "],\n", stats.lits[1]); //unfounded set checking
-		printf("  [\"Literals_in_Other_Nogoods\" , %" PRIu64 "],\n", stats.lits[2]);
 		uint64 sum_lits = stats.lits[0] + stats.lits[1] +stats.lits[2];
 		printf("  [\"Frac_Literals_in_Conflict_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[0]) / sum_lits);
 		printf("  [\"Frac_Literals_in_Loop_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[1]) / sum_lits); //unfounded set checking
-		printf("  [\"Frac_Literals_in_Other_Nogoods\" , %.4f],\n", static_cast<double>(stats.lits[2]) / sum_lits);
 		printf("  [\"Removed_Nogoods\" , %" PRIu64 "],\n", stats.deleted);
 		printf("  [\"Learnt_Binary\" , %u],\n", stats.binary);
 		printf("  [\"Learnt_Ternary\" , %u],\n", stats.ternary);
@@ -193,7 +173,7 @@ void Output::printDynamic(const Solver& s) {
 
 		// Jump Stats
 		const JumpStats* jstats = stats.jumps;
-		printf("  [\"Decision_Literals_Models\" , %" PRIu64 "],\n", jstats->modLits); //for optimization problems
+
 		printf("  [\"Skipped_Levels_while_Backjumping\" , %" PRIu64 "],\n", jstats->jumpSum);
 		printf("  [\"Avg_Skipped_Levels_while_Backjumping\" , %.4f],\n", static_cast<double>(jstats->jumpSum) / stats.analyzed);
 		printf("  [\"Longest_Backjumping\" , %u],\n", jstats->maxJump);
@@ -202,6 +182,29 @@ void Output::printDynamic(const Solver& s) {
 		printf("  [\"Running_Avg_Conflictlevel\" , %.4f],\n", sstats->avgCfl());
 		printf("  [\"Running_Avg_LBD\" , %.4f]\n", sstats->avgLbd());
 		printf(" ]\n");
+
+		// Optimization Stats
+		if (s.sharedContext()->enumerator()->minimize()) {
+			printf(",\n");
+			printf(" \"Optimization-%" PRIu64 "\": [\n", calls);
+			printf("  [\"Models\", %" PRIu64 "],\n", stats.models);
+			printf("  [\"Decision_Literals_Models\", %" PRIu64 "],\n", jstats->modLits);
+			printf("  [\"Avg_Improvement\", %.4f],\n", ostats.avg_impr);
+			double var_impr = s.stats.models > 1 ? ostats.var_impr / (s.stats.models - 1): 0;
+			printf("  [\"Stdev_Improvement\", %.4f],\n", sqrt(var_impr));
+			printf("  [\"Var_Coeff_Improvement\", %.4f],\n", sqrt(var_impr) / ostats.avg_impr);
+			printf("  [\"Avg_Ratio_Improvement\", %.4f],\n", ostats.avg_ratio_impr);
+			double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
+			printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr));
+			printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
+			if (ostats.last_quality != 0)
+				printf("  [\"Ratio_Worst_Best\", %.4f]\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
+			else
+				printf("  [\"Ratio_Worst_Best\", 0.0000]\n");
+
+			printf(" ]\n");
+		}
+
 	}
 }
 
@@ -284,6 +287,9 @@ bool Options::validateOptions(const ProgramOptions::ParsedOptions& parsed, Progr
 }
 
 void Options::applyDefaults(Input::Format f) {
+	// change restart heuristic -> fixed strategy, restart after 1000 conflicts
+	SolverConfig* config = clasp.getSolver(0);
+	config->params.restart.sched = ScheduleStrategy(ScheduleStrategy::arithmetic_schedule, 1000, 0, 0);
 	if (f != Input::SMODELS) {
 		Clasp::SatElite::SatElite* pre = new Clasp::SatElite::SatElite();
 		pre->options.maxIters = 20;

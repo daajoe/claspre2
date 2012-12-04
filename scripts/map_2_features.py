@@ -54,7 +54,17 @@ if __name__=="__main__":
             break
         index += 1
     
-    opt_feats = feature_dict.get("Optimization")
+    opt_pre_feats = feature_dict.get("After_Preprocessing_Optimization")
+    opt_dynamic_feats = []
+    index = 1
+    
+    while True:
+        restart_feats = feature_dict.get("Optimization-%d" % (index))
+        if restart_feats:
+            opt_dynamic_feats.extend(restart_feats)
+        else:
+            break
+        index += 1
      
     flat_feats = []
     flat_names = []
@@ -62,12 +72,20 @@ if __name__=="__main__":
     flat_names.extend([x for (x,y) in preprocessing_feats])
     flat_feats.extend([y for (x,y) in dynamic_feats])
     flat_names.extend([x for (x,y) in dynamic_feats])
-    if opt_feats:
-        flat_feats.extend([y for (x,y) in opt_feats])
+    if opt_pre_feats:
+        flat_feats.extend([y for (x,y) in opt_pre_feats])
+        flat_feats.extend([y for (x,y) in opt_dynamic_feats])
         flat_names.extend([x for (x,y) in opt_feats])
+        flat_names.extend([x for (x,y) in opt_dynamic_feats])
         
     index = 0
     for i in indicators:
+        print("%d. %s %d" %(index+1, flat_names[index],i))
+        index += 1
+       
+    print("---")
+    index = 0 
+    for i in indicators:
         if i == 1:
-            print(flat_names[index])
+            print("%d. %s %d" %(index+1, flat_names[index],i))
         index += 1

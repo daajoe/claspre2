@@ -47,13 +47,24 @@ if __name__=="__main__":
             break
         index += 1
     
-    opt_feats = feature_dict.get("Optimization")
+    opt_pre_feats = feature_dict.get("After_Preprocessing_Optimization")
+    opt_dynamic_feats = []
+    index = 1
+    
+    while True:
+        restart_feats = feature_dict.get("Optimization-%d" % (index))
+        if restart_feats:
+            opt_dynamic_feats.extend(restart_feats)
+        else:
+            break
+        index += 1
      
     flat_feats = []
     flat_feats.extend([y for (x,y) in preprocessing_feats])
     flat_feats.extend([y for (x,y) in dynamic_feats])
-    if opt_feats:
-        flat_feats.extend([y for (x,y) in opt_feats])
+    if opt_pre_feats:
+        flat_feats.extend([y for (x,y) in opt_pre_feats])
+        flat_feats.extend([y for (x,y) in opt_dynamic_feats])
         
     print("Features: "+",".join(map(str,flat_feats)))
     
