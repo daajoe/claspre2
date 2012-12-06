@@ -192,11 +192,21 @@ void Output::printDynamic(const Solver& s) {
 			printf("  [\"Avg_Improvement\", %.4f],\n", ostats.avg_impr);
 			double var_impr = s.stats.models > 1 ? ostats.var_impr / (s.stats.models - 1): 0;
 			printf("  [\"Stdev_Improvement\", %.4f],\n", sqrt(var_impr));
-			printf("  [\"Var_Coeff_Improvement\", %.4f],\n", sqrt(var_impr) / ostats.avg_impr);
+			if (ostats.avg_impr != 0) {
+				printf("  [\"Var_Coeff_Improvement\", %.4f],\n", sqrt(var_impr) / ostats.avg_impr);
+			}
+			else {
+				printf("  [\"Var_Coeff_Improvement\", 0.0000],\n");
+			}
 			printf("  [\"Avg_Ratio_Improvement\", %.4f],\n", ostats.avg_ratio_impr);
 			double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
 			printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr));
-			printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
+			if (ostats.avg_ratio_impr != 0) {
+				printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
+			}
+			else {
+				printf("  [\"Var_Coeff_Ratio_Improvement\", 0.0000],\n");
+			}
 			if (ostats.last_quality != 0)
 				printf("  [\"Ratio_Worst_Best\", %.4f]\n", static_cast<double>(ostats.first_quality) / ostats.last_quality );
 			else
