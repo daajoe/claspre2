@@ -40,12 +40,14 @@ namespace Claspre {
 // clasp is done - write result
 void Output::onExit(const Solver& s, const Result& r) {
 
-	if (not s.sharedContext()->enumerator()->minimize() and s.stats.models == 0) {
-		printDynamic(s);
-	}
+	if (s.sharedContext()) {
+		if (not s.sharedContext()->enumerator()->minimize() and s.stats.models == 0) {
+			printDynamic(s);
+		}
 
-	if (s.sharedContext()->enumerator()->minimize()) {
-		printDynamic(s);
+		if (s.sharedContext()->enumerator()->minimize()) {
+			printDynamic(s);
+		}
 	}
 	printf("}\n");
 //	printf("Times:\n");
@@ -105,40 +107,87 @@ void Output::onProgramPrepared(const Solver& s) {
 		if (logicProgram->sumEqs() > 0) {
 			printf("  [\"Frac_Atom-Atom_Equivalences\", %.4f],\n",  static_cast<double>(logicProgram->eqs[0]) /logicProgram->sumEqs());
 			printf("  [\"Frac_Body-Body_Equivalences\", %.4f],\n",  static_cast<double>(logicProgram->eqs[1]) /logicProgram->sumEqs());
-			printf("  [\"Frac_Other_Equivalences\", %.4f],\n",  static_cast<double>(logicProgram->eqs[2]) /logicProgram->sumEqs());
+			printf("  [\"Frac_Other_Equivalences\", %.4f]",  static_cast<double>(logicProgram->eqs[2]) /logicProgram->sumEqs());
 		}
 		else {
 			printf("  [\"Frac_Atom-Atom_Equivalences\", 0],\n");
 			printf("  [\"Frac_Body-Body_Equivalences\", 0],\n");
-			printf("  [\"Frac_Other_Equivalences\", 0],\n");
+			printf("  [\"Frac_Other_Equivalences\", 0]");
 		}
 
-		// Shared Context Stats
-		printf("  [\"Binary_Constraints\", %u],\n",  s.sharedContext()->numBinary());
-		printf("  [\"Ternary_Constraints\", %u],\n",  s.sharedContext()->numTernary());
-		uint32 other_const = s.numConstraints() - s.sharedContext()->numTernary();
-		printf("  [\"Other_Constraints\", %u],\n",  other_const);
-		printf("  [\"Frac_Binary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numBinary()) / s.sharedContext()->numConstraints());
-		printf("  [\"Frac_Ternary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numTernary()) / s.sharedContext()->numConstraints());
-		printf("  [\"Frac_Other_Constraints\", %.4f]\n",  static_cast<double>(other_const) / s.sharedContext()->numConstraints());
+		if (s.sharedContext()) {
+			printf(",\n");
+			// Shared Context Stats; only available if not solved while preprocessing
+			printf("  [\"Binary_Constraints\", %u],\n",  s.sharedContext()->numBinary());
+			printf("  [\"Ternary_Constraints\", %u],\n",  s.sharedContext()->numTernary());
+			uint32 other_const = s.numConstraints() - s.sharedContext()->numTernary();
+			printf("  [\"Other_Constraints\", %u],\n",  other_const);
+			printf("  [\"Frac_Binary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numBinary()) / s.sharedContext()->numConstraints());
+			printf("  [\"Frac_Ternary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numTernary()) / s.sharedContext()->numConstraints());
+			printf("  [\"Frac_Other_Constraints\", %.4f]\n",  static_cast<double>(other_const) / s.sharedContext()->numConstraints());
+		}
+		else {
+			printf("\n");
+		}
 		printf(" ]\n");
 
-		if (logicProgram->rules[6] > 0) {
+		if (facade_.api()->getMinimize()) {
 			printf(",\n");
 			printf(" \"After_Preprocessing_Optimization\": [\n");
 			  printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
-			  printf("  [\"Frac_Optimization_Rules\", %.4f]\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
-			printf(" ]\n");
-			if (facade_.api()->getMinimize()) {
-				for (ProgramBuilder::MinimizeRule* min = facade_.api()->getMinimize(); min; min = min->next_) {
-					for (WeightLitVec::const_iterator it = min->lits_.begin(), end = min->lits_.end(); it != end; ++it) {
-						it->first; // Atom-Id
-						it->second;// Weight >= 0
-					}
+			  printf("  [\"Frac_Optimization_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
+			uint min_lits = 0;
+			uint min_rules = 0;
+			std::set<uint> min_atoms;
+			double sum_mean = 0;
+			double sum_variance = 0;
+			double sum_var_coeff = 0;
+			uint sum_size = 0;
+			uint sum_size_square = 0;
+			for (ProgramBuilder::MinimizeRule* min = facade_.api()->getMinimize(); min; min = min->next_) {
+				uint sum = 0;
+				uint sum_square = 0;
+				uint min_lits_const =0;
+				for (WeightLitVec::const_iterator it = min->lits_.begin(), end = min->lits_.end(); it != end; ++it) {
+					//it->first; // Atom-Id
+					//it->second;// Weight >= 0
+					min_atoms.insert(it->first.index());
+					min_lits_const += 1;
+					sum += it->second;
+					sum_square += it->second * it->second;
 				}
+				min_rules += 1;
+				sum_size += min_lits_const;
+				sum_size_square += min_lits_const * min_lits_const;
+				double mean_const = static_cast<double>(sum)/min_lits_const;
+				double variance_const = (sum_square - ((sum * sum) / static_cast<double>(min_lits_const))) / (min_lits_const - 1);
+				double var_coeff_const = sqrt(variance_const) / mean_const;
+				sum_mean += mean_const;
+				sum_variance += variance_const;
+				sum_var_coeff += var_coeff_const;
 			}
-		}
+			double avg_mean = sum_mean / min_rules;
+			double avg_variance = sum_variance / min_rules;
+			double avg_var_coeff = sum_var_coeff / min_rules;
+			double avg_size = static_cast<double>(sum_size) / min_rules;
+			double var_size = 0.0;
+			double varcoeff_size = 0.0;
+			if (min_rules > 1) {
+				var_size = (sum_size_square - ((sum_size*sum_size) / static_cast<double>(min_rules))) / (min_rules - 1);
+				varcoeff_size = sqrt(var_size) / avg_size;
+			}
 
+			uint32 n_min_atoms = min_atoms.size();
+			printf("  [\"Avg_Size_Opt_Constraints\", %.4f],\n", avg_size);
+			printf("  [\"Var_Size_Opt_Constraints\", %.4f],\n", var_size);
+			printf("  [\"VarCoeff_Size_Opt_Constraints\", %.4f],\n", varcoeff_size);
+			printf("  [\"Min_Atoms\", %u],\n", n_min_atoms);
+			printf("  [\"Min_Atoms/Program_Atoms\", %.4f],\n", n_min_atoms / static_cast<double>(logicProgram->atoms));
+			printf("  [\"Avg_Weight_Mean\", %.4f],\n", avg_mean);
+			printf("  [\"Avg_Weight_Var\", %.4f]\n", avg_variance);
+			printf("  [\"Avg_Weight_Var_Coeff\", %.4f]\n", avg_var_coeff);
+			printf(" ]\n");
+		}
 	}
 }
 
@@ -173,7 +222,7 @@ void Output::printDynamic(const Solver& s) {
 		printf("  [\"Learnt_Binary\" , %u],\n", stats.binary);
 		printf("  [\"Learnt_Ternary\" , %u],\n", stats.ternary);
 		uint64 learnt_others = sum_learnts - stats.binary - stats.ternary;
-		printf("  [\"Learnt_Others\" , %u],\n", learnt_others);
+		printf("  [\"Learnt_Others\" , %" PRIu64 "],\n", learnt_others);
 		printf("  [\"Frac_Removed_Nogood\" , %.4f],\n", static_cast<double>(stats.deleted) / sum_learnts);
 		printf("  [\"Frac_Learnt_Binary\" , %.4f],\n", static_cast<double>(stats.binary) / sum_learnts);
 		printf("  [\"Frac_Learnt_Ternary\" , %.4f],\n", static_cast<double>(stats.ternary) / sum_learnts);
@@ -258,10 +307,17 @@ void Output::onModel(const Solver& s, const Clasp::Enumerator& en) {
 			ostats.avg_impr = ostats.avg_impr + delta / static_cast<double>(index - 1.0);
 			ostats.var_impr = ostats.var_impr + delta * (impr - ostats.avg_impr);
 
-			double ratio_impr = static_cast<double>(ostats.last_quality) / quality;
-			double delta_ratio = ratio_impr - ostats.avg_ratio_impr;
-			ostats.avg_ratio_impr = ostats.avg_ratio_impr + delta_ratio / static_cast<double>(index - 1.0);
-			ostats.var_ratio_impr = ostats.var_ratio_impr + delta_ratio * (impr - ostats.avg_ratio_impr);
+			if (quality > 0) {
+				double ratio_impr = static_cast<double>(ostats.last_quality) / quality;
+				double delta_ratio = ratio_impr - ostats.avg_ratio_impr;
+				ostats.avg_ratio_impr = ostats.avg_ratio_impr + delta_ratio / static_cast<double>(index - 1.0);
+				ostats.var_ratio_impr = ostats.var_ratio_impr + delta_ratio * (impr - ostats.avg_ratio_impr);
+			}
+			else {
+				ostats.avg_ratio_impr = 0;
+				ostats.var_ratio_impr = 0;
+			}
+
 
 
 		}
@@ -307,6 +363,7 @@ bool Options::validateOptions(const ProgramOptions::ParsedOptions& parsed, Progr
 void Options::applyDefaults(Input::Format f) {
 	// change restart heuristic -> fixed strategy, restart after 1000 conflicts
 	SolverConfig* config = clasp.getSolver(0);
+	clasp.opt.hierarch = 1;
 	config->params.restart.sched = ScheduleStrategy(ScheduleStrategy::arithmetic_schedule, 1000, 0, 0);
 	if (f != Input::SMODELS) {
 		Clasp::SatElite::SatElite* pre = new Clasp::SatElite::SatElite();
