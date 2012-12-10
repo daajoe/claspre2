@@ -495,6 +495,11 @@ public:
 	PrgBodyNode*  getBody(Var bodyId) const { return bodies_[bodyId]; }
 	Var           getEqAtom(Var a)    const { return getEqNode(atoms_, a);  }
 	const LitVec& getCompute()        const { return compute_; }
+	struct MinimizeRule {
+		WeightLitVec lits_;
+		MinimizeRule* next_;
+	};
+	MinimizeRule* getMinimize()       const { return minimize_; }
 private:
 	ProgramBuilder(const ProgramBuilder&);
 	ProgramBuilder& operator=(const ProgramBuilder&);
@@ -566,10 +571,7 @@ private:
 	VarVec        initialSupp_; // bodies that are (initially) supported
 	LitVec        compute_;     // atoms that are forced to true/false
 	VarList       vars_;        // created vars
-	struct MinimizeRule {
-		WeightLitVec lits_;
-		MinimizeRule* next_;
-	} *minimize_;               // list of minimize-rules
+	MinimizeRule* minimize_;    // list of minimize-rules
 	struct Incremental  {
 		Incremental();
 		uint32  startAtom_;       // first atom of current iteration

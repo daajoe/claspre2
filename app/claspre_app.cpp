@@ -129,6 +129,14 @@ void Output::onProgramPrepared(const Solver& s) {
 			  printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
 			  printf("  [\"Frac_Optimization_Rules\", %.4f]\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
 			printf(" ]\n");
+			if (facade_.api()->getMinimize()) {
+				for (ProgramBuilder::MinimizeRule* min = facade_.api()->getMinimize(); min; min = min->next_) {
+					for (WeightLitVec::const_iterator it = min->lits_.begin(), end = min->lits_.end(); it != end; ++it) {
+						it->first; // Atom-Id
+						it->second;// Weight >= 0
+					}
+				}
+			}
 		}
 
 	}
