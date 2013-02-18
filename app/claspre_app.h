@@ -70,6 +70,7 @@ struct Options {
 	SolveLimit         limit;     // current solve limit
 	uint32             timeout;   // timeout in seconds (default: none=-1)
 	bool               fastExit;  // force fast exit (no dtors)
+	bool 			   base;	  // print only base features (termination after preprocessing)
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////

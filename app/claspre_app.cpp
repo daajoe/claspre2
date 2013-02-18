@@ -86,7 +86,12 @@ void Output::onProgramPrepared(const Solver& s) {
 		printf("  [\"Free_Problem_Variables\", %u],\n",  s.numFreeVars());
 		printf("  [\"Assigned_Problem_Variables\", %u],\n",  s.numAssignedVars());
 		printf("  [\"Constraints\", %u],\n",  s.numConstraints());
-		printf("  [\"Constraints/Vars\", %.4f],\n",  static_cast<double>(s.numConstraints()) / s.numVars());
+		if (s.numVars() > 0) {
+			printf("  [\"Constraints/Vars\", %.4f],\n",  static_cast<double>(s.numConstraints()) / s.numVars());
+		}
+		else {
+			printf("  [\"Constraints/Vars\", 0],\n");
+		}
 		printf("  [\"Created_Bodies\", %u],\n", logicProgram->bodies);
 		printf("  [\"Program_Atoms\", %u],\n", logicProgram->atoms);
 		printf("  [\"SCCS\", %u],\n", sccs);
@@ -341,12 +346,18 @@ void Options::initOptions(ProgramOptions::OptionContext& root) {
 		("time-limit", storeTo(timeout)->arg("<n>"), "Set time limit to %A seconds (0=no limit)")
 		("solve-limit", storeTo(limit)->arg("<n>[,<m>]"), "Stop search after <n> conflicts or <m> restarts\n")
 		("fast-exit,@1",  flag(fastExit), "Force fast exit (do not call dtors)")
+		("base",  flag(base), "Only base features (termination after preprocessing")
 		("file,f,@2", storeTo(input)->composing(), "Input files")
 	;
 	root.add(basic);
 }
 
 bool Options::validateOptions(const ProgramOptions::ParsedOptions& parsed, ProgramOptions::Messages&) {
+
+	if (base) {
+		clasp.solve.limit = Clasp::SolveLimits(UINT64_MAX, 0);
+		return true;
+	}
 	if (!parsed.count("solve-limit")) {
 		// <TBD>
 		// set your default here
