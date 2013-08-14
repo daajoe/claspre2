@@ -334,7 +334,8 @@ void Output::onModel(const Solver& s, const Clasp::Enumerator& en) {
 // Claspre options
 /////////////////////////////////////////////////////////////////////////////////////////
 Options::Options()
-	: limit(0, 0)
+	: limit(0)
+	, restart(1024)
 	, timeout(0)
 	, fastExit(false) {
 }
@@ -344,7 +345,8 @@ void Options::initOptions(ProgramOptions::OptionContext& root) {
 	OptionGroup basic("Basic Options");
 	basic.addOptions()
 		("time-limit", storeTo(timeout)->arg("<n>"), "Set time limit to %A seconds (0=no limit)")
-		("solve-limit", storeTo(limit)->arg("<n>[,<m>]"), "Stop search after <n> conflicts or <m> restarts\n")
+		("solve-limit", storeTo(limit)->arg("<n>"), "Stop search after <m> restarts\n")
+		("restarts", storeTo(restart)->arg("<n>"), "Perform restart after <n> conflicts\n")
 		("fast-exit,@1",  flag(fastExit), "Force fast exit (do not call dtors)")
 		("base",  flag(base), "Only base features (termination after preprocessing")
 		("file,f,@2", storeTo(input)->composing(), "Input files")
@@ -361,21 +363,21 @@ bool Options::validateOptions(const ProgramOptions::ParsedOptions& parsed, Progr
 	if (!parsed.count("solve-limit")) {
 		// <TBD>
 		// set your default here
-		clasp.solve.limit = Clasp::SolveLimits(UINT64_MAX, 4);
+		clasp.solve.limit = Clasp::SolveLimits(UINT64_MAX, 2);
 	}
 	else {
-		if (limit.first  == 0) { limit.first = -1; }
-		if (limit.second == 0) { limit.second= -1; }
-		clasp.solve.limit = Clasp::SolveLimits(static_cast<uint64>(limit.first), static_cast<uint64>(limit.second));
+		clasp.solve.limit = Clasp::SolveLimits(UINT64_MAX, static_cast<uint64>(limit));
 	}
+	SolverConfig* config = clasp.getSolver(0);
+	config->params.restart.sched = ScheduleStrategy(ScheduleStrategy::arithmetic_schedule, restart, 0, 0);
 	return true;
 }
 
 void Options::applyDefaults(Input::Format f) {
 	// change restart heuristic -> fixed strategy, restart after 1000 conflicts
-	SolverConfig* config = clasp.getSolver(0);
+	//SolverConfig* config = clasp.getSolver(0);
 	clasp.opt.hierarch = 1;
-	config->params.restart.sched = ScheduleStrategy(ScheduleStrategy::arithmetic_schedule, 1000, 0, 0);
+	//config->params.restart.sched = ScheduleStrategy(ScheduleStrategy::arithmetic_schedule, 1000, 0, 0);
 	if (f != Input::SMODELS) {
 		Clasp::SatElite::SatElite* pre = new Clasp::SatElite::SatElite();
 		pre->options.maxIters = 20;

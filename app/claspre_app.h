@@ -60,14 +60,14 @@ using Clasp::RealTime;
 struct Options {
 	Options();
 	typedef ProgramOptions::StringSeq StringSeq;
-	typedef std::pair<int, int>       SolveLimit;
 	void initOptions(ProgramOptions::OptionContext& root);
 	bool validateOptions(const ProgramOptions::ParsedOptions& parsed, ProgramOptions::Messages&);
 	void applyDefaults(Clasp::Input::Format f);
 	static bool parsePositional(const std::string& s, std::string& out);
 	Clasp::ClaspConfig clasp;
 	StringSeq          input;     // list of input files - only first used!
-	SolveLimit         limit;     // current solve limit
+	uint32        	   limit;     // current solve limit
+	uint32             restart;   // timeout in seconds (default: none=-1)
 	uint32             timeout;   // timeout in seconds (default: none=-1)
 	bool               fastExit;  // force fast exit (no dtors)
 	bool 			   base;	  // print only base features (termination after preprocessing)
