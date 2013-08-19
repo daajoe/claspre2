@@ -261,8 +261,9 @@ void Output::printDynamic(const Solver& s) {
 				printf("  [\"Var_Coeff_Improvement\", 0.0000],\n");
 			}
 			printf("  [\"Avg_Ratio_Improvement\", %.4f],\n", ostats.avg_ratio_impr);
-			double var_ration_impr = s.stats.models > 1 ? ostats.var_ratio_impr / (s.stats.models - 1): 0;
-			printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr));
+
+			double var_ration_impr = s.stats.models > 1 ? sqrt(ostats.var_ratio_impr / (s.stats.models - 1)) : 0;
+			printf("  [\"Stdev_Ratio_Improvement\", %.4f],\n", var_ration_impr);
 			if (ostats.avg_ratio_impr != 0) {
 				printf("  [\"Var_Coeff_Ratio_Improvement\", %.4f],\n", sqrt(var_ration_impr) / ostats.avg_ratio_impr);
 			}
@@ -316,7 +317,7 @@ void Output::onModel(const Solver& s, const Clasp::Enumerator& en) {
 				double ratio_impr = static_cast<double>(ostats.last_quality) / quality;
 				double delta_ratio = ratio_impr - ostats.avg_ratio_impr;
 				ostats.avg_ratio_impr = ostats.avg_ratio_impr + delta_ratio / static_cast<double>(index - 1.0);
-				ostats.var_ratio_impr = ostats.var_ratio_impr + delta_ratio * (impr - ostats.avg_ratio_impr);
+				ostats.var_ratio_impr = ostats.var_ratio_impr + delta_ratio * (ratio_impr - ostats.avg_ratio_impr);
 			}
 			else {
 				ostats.avg_ratio_impr = 0;
