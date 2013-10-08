@@ -189,7 +189,7 @@ void Output::onProgramPrepared(const Solver& s) {
 			printf("  [\"Min_Atoms\", %u],\n", n_min_atoms);
 			printf("  [\"Min_Atoms/Program_Atoms\", %.4f],\n", n_min_atoms / static_cast<double>(logicProgram->atoms));
 			printf("  [\"Avg_Weight_Mean\", %.4f],\n", avg_mean);
-			printf("  [\"Avg_Weight_Var\", %.4f]\n", avg_variance);
+			printf("  [\"Avg_Weight_Var\", %.4f],\n", avg_variance);
 			printf("  [\"Avg_Weight_Var_Coeff\", %.4f]\n", avg_var_coeff);
 			printf(" ]\n");
 		}
