@@ -125,7 +125,7 @@ void Output::onProgramPrepared(const Solver& s) {
 			// Shared Context Stats; only available if not solved while preprocessing
 			printf("  [\"Binary_Constraints\", %u],\n",  s.sharedContext()->numBinary());
 			printf("  [\"Ternary_Constraints\", %u],\n",  s.sharedContext()->numTernary());
-			uint32 other_const = s.numConstraints() - s.sharedContext()->numTernary();
+			uint32 other_const = s.numConstraints() - s.sharedContext()->numBinary() - s.sharedContext()->numTernary();
 			printf("  [\"Other_Constraints\", %u],\n",  other_const);
 			printf("  [\"Frac_Binary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numBinary()) / s.sharedContext()->numConstraints());
 			printf("  [\"Frac_Ternary_Constraints\", %.4f],\n",  static_cast<double>(s.sharedContext()->numTernary()) / s.sharedContext()->numConstraints());
