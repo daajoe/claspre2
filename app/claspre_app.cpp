@@ -49,7 +49,25 @@ void Output::onExit(const Solver& s, const Result& r) {
 			printDynamic(s);
 		}
 	}
+
+	std::string result = "?";
+
+	if (not s.sharedContext()->enumerator()->minimize() and facade_.result() == ClaspFacade::result_sat) {
+		result = "SATISFIABLE";
+	}
+
+	if (s.sharedContext()->enumerator()->minimize() and r.complete) {
+		result = "OPTIMUM FOUND";
+	}
+
+	if (facade_.result() == ClaspFacade::result_unsat) {
+		result = "UNSATISFIABLE";
+	}
+
+	printf(",\n \"Status\" : \"%s\"\n", result.c_str());
+
 	printf("}\n");
+
 //	printf("Times:\n");
 //	printf("  Total: %.3f\n", r.totalTime);
 //	printf("  Solve: %.3f\n", r.solveTime);
