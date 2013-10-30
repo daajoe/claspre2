@@ -7,6 +7,7 @@
 import sys
 import fileinput
 import json
+import traceback
 
 from tempfile import NamedTemporaryFile
 from subprocess import Popen
@@ -33,6 +34,8 @@ if __name__=="__main__":
         feature_dict = json.load(outfile)
     except:
         print("Features: -512")
+        print("CRASHED")
+        #traceback.print_exc()
         sys.exit(-1)
     
     preprocessing_feats = feature_dict["After_Preprocessing"]
@@ -67,4 +70,4 @@ if __name__=="__main__":
         flat_feats.extend([y for (x,y) in opt_dynamic_feats])
         
     print("Features: "+",".join(map(str,flat_feats)))
-    
+    print("%s" %(feature_dict["Status"]))

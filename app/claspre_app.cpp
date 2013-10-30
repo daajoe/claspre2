@@ -223,7 +223,7 @@ void Output::printDynamic(const Solver& s) {
 	//printf("(Re)-Start %" PRIu64 " with limits (%" PRIu64 ", %u)\n", stats.restarts, conflictLimit, learntLimit);
 	static uint64 calls = -1;
 	calls += 1;
-	if (calls != 0) {
+	if (calls != 0 and stats.analyzed > 0) {
 		//Core Stats
 		printf(",\n");
 		printf(" \"Dynamic-%" PRIu64 "\" :[\n", calls);
