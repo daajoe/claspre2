@@ -50,7 +50,7 @@ void Output::onExit(const Solver& s, const Result& r) {
 		}
 	}
 
-	std::string result = "?";
+	std::string result = "ok";
 
 	if (not s.sharedContext()->enumerator()->minimize() and facade_.result() == ClaspFacade::result_sat) {
 		result = "SATISFIABLE";
