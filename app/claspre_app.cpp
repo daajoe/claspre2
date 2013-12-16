@@ -98,7 +98,13 @@ void Output::onProgramPrepared(const Solver& s) {
 		uint32 tight = logicProgram->sccs == 0 || logicProgram->sccs == PrgNode::noScc;
 		uint32 sccs  = logicProgram->sccs != PrgNode::noScc ? logicProgram->sccs : 0;
 
-		printf(" \"After_Preprocessing\": [\n");
+		printf(" \"Static\": [\n");
+		printf("  [\"Frac_Neg_Body\", %.4f], \n", static_cast<double>(logicProgram->neg_body_rules) / logicProgram->rules[0]);
+		printf("  [\"Frac_Pos_Body\", %.4f], \n", static_cast<double>(logicProgram->pos_body_rules) / logicProgram->rules[0]);
+		printf("  [\"Frac_Unary_Rules\", %.4f], \n", static_cast<double>(logicProgram->una_rules) / logicProgram->rules[0]);
+		printf("  [\"Frac_Binary_Rules\", %.4f], \n", static_cast<double>(logicProgram->bin_rules) / logicProgram->rules[0]);
+		printf("  [\"Frac_Ternary_Rules\", %.4f], \n", static_cast<double>(logicProgram->ter_rules) / logicProgram->rules[0]);
+		printf("  [\"Frac_Integrity_Rules\", %.4f], \n", static_cast<double>(logicProgram->integrity_constr) / logicProgram->rules[0]);
 		printf("  [\"Tight\", %u],\n",  tight);
 		printf("  [\"Problem_Variables\", %u],\n",  s.numVars());
 		printf("  [\"Free_Problem_Variables\", %u],\n",  s.numFreeVars());
@@ -156,7 +162,7 @@ void Output::onProgramPrepared(const Solver& s) {
 
 		if (facade_.api()->getMinimize()) {
 			printf(",\n");
-			printf(" \"After_Preprocessing_Optimization\": [\n");
+			printf(" \"Static_Optimization\": [\n");
 			  printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
 			  printf("  [\"Frac_Optimization_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
 			uint min_lits = 0;

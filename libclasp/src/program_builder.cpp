@@ -799,6 +799,9 @@ void PreproStats::accu(const PreproStats& o) {
 	bodies    += o.bodies;
 	atoms     += o.atoms;
 	ufsNodes  += o.ufsNodes;
+	integrity_constr	+= o.integrity_constr;
+	neg_body_rules 		+= o.neg_body_rules;
+	bin_rules			+= o.bin_rules;
 	for (int i = 0; i != sizeof(rules)/sizeof(rules[0]); ++i) {
 		rules[i] += o.rules[i];
 	}
@@ -1057,6 +1060,9 @@ ProgramBuilder& ProgramBuilder::setCompute(Var atomId, bool pos) {
 	PrgAtomNode* a = resize(atomId);
 	ValueRep v     = pos ? value_weak_true : value_false;
 	compute_.push_back(Literal(atomId, v==value_false));
+	if (v == value_false && a->value() != value_false) {
+		stats.integrity_constr += a->preds.size();
+	}
 	if (!a->setValue(v)) {
 		setConflict();
 	}
@@ -1162,6 +1168,11 @@ void ProgramBuilder::addRuleImpl(PrgRule& r, const PrgRule::RData& rd) {
 			ruleState_.popFromRule(*it);  // clear flag of head atoms
 		}
 		if (rd.value != value_free) { b.first->setValue(rd.value); }
+		if (r.body.size() + r.heads.size() == 1){ stats.una_rules += 1; }
+		if (r.body.size() + r.heads.size() == 2){ stats.bin_rules += 1; }
+		if (r.body.size() + r.heads.size() == 3){ stats.ter_rules += 1; }
+		if (rd.posSize == 0) { stats.neg_body_rules += 1; }
+		if (r.body.size() == rd.posSize) { stats.pos_body_rules +=1; }
 	}
 	else {
 		check_precondition(r.heads.empty(), std::logic_error);

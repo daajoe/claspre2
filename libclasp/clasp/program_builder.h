@@ -153,6 +153,12 @@ struct PreproStats {
 	uint32 ufsNodes;  /**< How many nodes in the positive BADG? */
 	uint32 rules[7];  /**< Number of rules. rules{0]: sum, rules[RuleType rt]: rules of type rt */
 	uint32 eqs[3];    /**< How many equivalences?: eqs[0]: Atom-Atom, eqs[1]: Body-Body, eqs[2]: Other */
+	uint32 integrity_constr; /**< How many rules with false in head? */
+	uint32 neg_body_rules; /**< how many rules with negative body */
+	uint32 pos_body_rules; /**< how many rules with positive body */
+	uint32 una_rules;  /**< how many rules with binary size (head + body) */
+	uint32 bin_rules;  /**< how many rules with binary size (head + body) */
+	uint32 ter_rules;  /**< how many rules with binary size (head + body) */
 	struct TrStats {  
 		TrStats() { std::memset(this, 0, sizeof(TrStats)); }
 		TrStats(const TrStats& o) : auxAtoms(o.auxAtoms) {
