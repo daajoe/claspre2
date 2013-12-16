@@ -38,7 +38,7 @@ if __name__=="__main__":
         #traceback.print_exc()
         sys.exit(-1)
     
-    preprocessing_feats = feature_dict["After_Preprocessing"]
+    preprocessing_feats = feature_dict["Static"]
     dynamic_feats = []
     index = 1
     
@@ -50,7 +50,7 @@ if __name__=="__main__":
             break
         index += 1
     
-    opt_pre_feats = feature_dict.get("After_Preprocessing_Optimization")
+    opt_pre_feats = feature_dict.get("Static_Optimization")
     opt_dynamic_feats = []
     index = 1
     
