@@ -100,19 +100,19 @@ public:
 		: opts_(o)
 		, facade_(f) {}
 	// called once solving has finished
-	void onExit(const Solver& s, const Result& r);
+	void onExit(const Solver& s, const Result& r, double time);
 	// called on each state change (read->preprocess->solve)
 	void onState(bool enter);
 	// called once the solver is ready to solve
-	void onProgramPrepared(const Solver& s);
+	void onProgramPrepared(const Solver& s, double time);
 	// called on *before* each (re-)start
-	void onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit);
+	void onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit, double time);
 	// called *after* each deletion operation
 	void onDeletion(const Solver& s, uint64 conflictLimit, uint32 learntLimit);
 	// called on each model
 	void onModel(const Solver& s, const Clasp::Enumerator& en);
 	// print dynamic features
-	void printDynamic(const Solver& s);
+	void printDynamic(const Solver& s, double time);
 private:
 	Output& operator=(const Output&);
 	typedef Clasp::Input::Format InputFormat;
@@ -169,6 +169,7 @@ private:
 	// -------------------------------------------------------------------------------------------  
 	Options                app_;
 	Timer<ProcessTime>     cpuTotalTime_;
+	Timer<ProcessTime>	   claspre_timer;
 	Timer<RealTime>        timer_[ClaspFacade::num_states]; // one for each state
 	double                 timeToFirst_;                    // time to first model
 	double                 timeToLast_;                     // time to last model

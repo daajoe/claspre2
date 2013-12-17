@@ -38,15 +38,15 @@ namespace Claspre {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 // clasp is done - write result
-void Output::onExit(const Solver& s, const Result& r) {
+void Output::onExit(const Solver& s, const Result& r, double time) {
 
 	if (s.sharedContext()) {
 		if (not s.sharedContext()->enumerator()->minimize() and s.stats.models == 0) {
-			printDynamic(s);
+			printDynamic(s, time);
 		}
 
 		if (s.sharedContext()->enumerator()->minimize()) {
-			printDynamic(s);
+			printDynamic(s, time);
 		}
 	}
 
@@ -89,7 +89,7 @@ void Output::onState(bool enter) {
 }
 
 // preprocessing done
-void Output::onProgramPrepared(const Solver& s) {
+void Output::onProgramPrepared(const Solver& s, double time) {
 	//printf("Preprocessing done!\n");
 	printf("{\n");
 	const PreproStats* logicProgram = facade_.api() ? &facade_.api()->stats : 0;
@@ -97,7 +97,7 @@ void Output::onProgramPrepared(const Solver& s) {
 		// ASP stats
 		uint32 tight = logicProgram->sccs == 0 || logicProgram->sccs == PrgNode::noScc;
 		uint32 sccs  = logicProgram->sccs != PrgNode::noScc ? logicProgram->sccs : 0;
-
+		printf(" \"Static-Time\": %.4f,\n", time);
 		printf(" \"Static\": [\n");
 		printf("  [\"Frac_Neg_Body\", %.4f], \n", static_cast<double>(logicProgram->neg_body_rules) / logicProgram->rules[0]);
 		printf("  [\"Frac_Pos_Body\", %.4f], \n", static_cast<double>(logicProgram->pos_body_rules) / logicProgram->rules[0]);
@@ -165,7 +165,6 @@ void Output::onProgramPrepared(const Solver& s) {
 			printf(" \"Static_Optimization\": [\n");
 			  printf("  [\"Optimization_Rules\", %u],\n", logicProgram->rules[6]);
 			  printf("  [\"Frac_Optimization_Rules\", %.4f],\n", static_cast<double>(logicProgram->rules[6]) / logicProgram->rules[0]);
-			uint min_lits = 0;
 			uint min_rules = 0;
 			std::set<uint> min_atoms;
 			double sum_mean = 0;
@@ -220,11 +219,11 @@ void Output::onProgramPrepared(const Solver& s) {
 	}
 }
 
-void Output::onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit) {
-	printDynamic(s);
+void Output::onRestart(const Solver& s, uint64 conflictLimit, uint32 learntLimit, double time) {
+	printDynamic(s, time);
 }
 
-void Output::printDynamic(const Solver& s) {
+void Output::printDynamic(const Solver& s, double time) {
 	const SolveStats& stats = s.stats;
 	//printf("(Re)-Start %" PRIu64 " with limits (%" PRIu64 ", %u)\n", stats.restarts, conflictLimit, learntLimit);
 	static uint64 calls = -1;
@@ -232,6 +231,7 @@ void Output::printDynamic(const Solver& s) {
 	if (calls != 0 and stats.analyzed > 0) {
 		//Core Stats
 		printf(",\n");
+		printf(" \"Dynamic-Time-%" PRIu64 "\" : %.4f,\n", calls, time);
 		printf(" \"Dynamic-%" PRIu64 "\" :[\n", calls);
 		printf("  [\"Choices\" , %" PRIu64 "],\n", stats.choices);
 		printf("  [\"Conflicts/Choices\" , %.4f],\n", static_cast<double>(stats.analyzed) / stats.choices);
@@ -577,6 +577,7 @@ int Application::run(int argc, char** argv) {
 		out_.reset(new Output(app_, clasp));
 		facade_ = &clasp;
 		cpuTotalTime_.start();
+		claspre_timer.start();
 		clasp.solve(input, app_.clasp, this);
 		cpuTotalTime_.stop();
 		int sig = blockSignals();// disable signal handler
@@ -623,7 +624,8 @@ void Application::printResult(int signal) {
 	r.unsatTime = r.complete && r.solveTime-ttl >= 0.001 ? r.solveTime-ttl : 0.0;
 	r.cpuTime   = std::max(cpuTotalTime_.total(), 0.0);
 	
-	out_->onExit(*app_.clasp.ctx.master(), r);
+	claspre_timer.stop();
+	out_->onExit(*app_.clasp.ctx.master(), r, claspre_timer.total());
 }
 
 // State-transition callback called by ClaspFacade.
@@ -655,7 +657,10 @@ void Application::event(const Solver& s, ClaspFacade::Event e, ClaspFacade& f) {
 		unblockSignals(true);
 	}
 	else if (e == ClaspFacade::event_p_prepared) {
-		out_->onProgramPrepared(s);
+		claspre_timer.stop();
+		out_->onProgramPrepared(s, claspre_timer.total());
+		claspre_timer.reset();
+		claspre_timer.start();
 	}
 }
 void Application::reportProgress(const SolveEvent& e) {
@@ -663,7 +668,10 @@ void Application::reportProgress(const SolveEvent& e) {
 		const SolvePathEvent& ev = static_cast<const SolvePathEvent&>(e);
 		const Solver& s          = *ev.solver;
 		if (ev.evType == SolvePathEvent::event_restart) {
-			out_->onRestart(s, ev.cLimit, ev.lLimit);
+			claspre_timer.stop();
+			out_->onRestart(s, ev.cLimit, ev.lLimit, claspre_timer.total());
+			claspre_timer.reset();
+			claspre_timer.start();
 		}
 		else if (ev.type == SolvePathEvent::event_deletion) {
 			out_->onDeletion(s, ev.cLimit, ev.lLimit);
