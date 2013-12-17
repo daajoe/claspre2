@@ -16,15 +16,20 @@ if __name__=="__main__":
 
     claspre2_path = "/home/manju/workspace2/claspre2/build/release/bin/claspre"
     
-    if len(sys.argv) > 1:
-        print("Reading from: "+sys.argv[1])
-        input_ = open(sys.argv[1],"r")
-    else:
-        print("Reading from: STDIN")
-        input_ = sys.stdin
+    #===========================================================================
+    # if len(sys.argv) > 1:
+    #     print("Reading from: "+sys.argv[1])
+    #     input_ = open(sys.argv[1],"r")
+    # else:
+    #===========================================================================
+    print("Reading from: STDIN")
+    input_ = sys.stdin
 
     outfile = NamedTemporaryFile(prefix="claspre_out_", suffix=".tmp", dir=".", delete=True)
-    popen_= Popen([claspre2_path],stdin=input_,stdout=outfile)
+    cmd = [claspre2_path]
+    cmd.extend(sys.argv[1:])
+    print(" ".join(cmd))
+    popen_= Popen(cmd,stdin=input_,stdout=outfile)
     popen_.communicate()
     
     outfile.flush()
@@ -39,13 +44,17 @@ if __name__=="__main__":
         sys.exit(-1)
     
     preprocessing_feats = feature_dict["Static"]
+    preprocessing_time = feature_dict["Static-Time"]
     dynamic_feats = []
+    dynamic_times = []
     index = 1
     
     while True:
         restart_feats = feature_dict.get("Dynamic-%d" % (index))
+        restart_time = feature_dict.get("Dynamic-Time-%d" % (index))
         if restart_feats:
             dynamic_feats.extend(restart_feats)
+            dynamic_times.append(restart_time)
         else:
             break
         index += 1
@@ -65,9 +74,15 @@ if __name__=="__main__":
     flat_feats = []
     flat_feats.extend([y for (x,y) in preprocessing_feats])
     flat_feats.extend([y for (x,y) in dynamic_feats])
-    if opt_pre_feats:
-        flat_feats.extend([y for (x,y) in opt_pre_feats])
-        flat_feats.extend([y for (x,y) in opt_dynamic_feats])
+    #===========================================================================
+    # if opt_pre_feats:
+    #     flat_feats.extend([y for (x,y) in opt_pre_feats])
+    #     flat_feats.extend([y for (x,y) in opt_dynamic_feats])
+    #===========================================================================
         
-    print("Features: "+",".join(map(str,flat_feats)))
+    times = [preprocessing_time]
+    times.extend(dynamic_times)
+    print("Features: %s" %(",".join(map(str,flat_feats))))
+    print("Featuretimes: %s" %(",".join(map(str,times))))
     print("%s" %(feature_dict["Status"]))
+    
