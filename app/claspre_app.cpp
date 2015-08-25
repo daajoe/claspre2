@@ -51,19 +51,18 @@ void Output::onExit(const Solver& s, const Result& r, double time) {
 	}
 
 	std::string result = "ok";
-
-	if (not s.sharedContext()->enumerator()->minimize() and facade_.result() == ClaspFacade::result_sat) {
+	
+	if ((s.sharedContext() and not s.sharedContext()->enumerator()->minimize()) and facade_.result() == ClaspFacade::result_sat) {
 		result = "SATISFIABLE";
 	}
 
-	if (s.sharedContext()->enumerator()->minimize() and r.complete) {
+	if ((s.sharedContext() and s.sharedContext()->enumerator()->minimize() and r.complete)) {
 		result = "OPTIMUM FOUND";
 	}
 
 	if (facade_.result() == ClaspFacade::result_unsat) {
 		result = "UNSATISFIABLE";
 	}
-
 	printf(",\n \"Status\" : \"%s\"\n", result.c_str());
 
 	printf("}\n");
@@ -168,7 +167,7 @@ void Output::onProgramPrepared(const Solver& s, double time) {
 			printf("\n");
 		}
 		printf(" ]\n");
-
+		
 		if (facade_.api()->getMinimize()) {
 			printf(",\n");
 			printf(" \"Static_Optimization\": [\n");
