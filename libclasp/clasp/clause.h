@@ -67,7 +67,7 @@ private:
 	SharedLiterals(const Literal* lits, uint32 size, ConstraintType t, uint32 numRefs);
 	SharedLiterals(const SharedLiterals&);
 	SharedLiterals& operator=(const SharedLiterals&);
-	std::atomic<int32> refCount_;
+	std::atomic_<int32> refCount_;
 	uint32             size_type_;
 	Literal            lits_[0];
 };

@@ -23,7 +23,9 @@
 #include <clasp/lookahead.h>
 #include <clasp/util/timer.h>
 #include <cmath>
-namespace Clasp { 
+#include <exst/extended_stats_calculator.h>
+
+namespace Clasp {
 ProgressReport::ProgressReport()  {}
 ProgressReport::~ProgressReport() {}
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -333,6 +335,7 @@ bool SimpleSolve::doSolve(Solver& s, const SolveParams& p) {
 	s.sharedContext()->reportProgress(SolveStateEvent(s, "algorithm"));
 	// Remove any existing assumptions and restore solver to a usable state.
 	// If this fails, the problem is unsat, even under no assumptions.
+    exst::StatsCalculator::getInstance().graphStatsCalculator.incidenceGraphStats.resetAssignment();
 	while (s.clearAssumptions() && hasWork) {
 		// Add assumptions - if this fails, the problem is unsat 
 		// under the current assumptions but not necessarily unsat.

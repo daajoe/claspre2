@@ -221,8 +221,8 @@ private:
 	struct ReverseArc;
 #if WITH_THREADS
 	struct Block {
-		typedef std::atomic<uint32> atomic_size;
-		typedef std::atomic<Block*> atomic_ptr;
+		typedef std::atomic_<uint32> atomic_size;
+		typedef std::atomic_<Block*> atomic_ptr;
 		typedef const Literal*      const_iterator;
 		typedef       Literal*      iterator;
 		enum { block_cap = (64 - (sizeof(atomic_size)+sizeof(atomic_ptr)))/sizeof(Literal) };

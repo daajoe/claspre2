@@ -19,6 +19,7 @@
 //
 #include "claspre_app.h"
 #include "alarm.h"
+#include <exst/extended_stats_calculator.h>
 #include <program_opts/composite_value_parser.h>  // pair and vector
 #include <program_opts/typed_value.h>
 #include <clasp/satelite.h>
@@ -64,6 +65,7 @@ void Output::onExit(const Solver& s, const Result& r, double time) {
 		result = "UNSATISFIABLE";
 	}
 	printf(",\n \"Status\" : \"%s\"\n", result.c_str());
+	exst::StatsCalculator::getInstance().printExtendedStats();
 
 	printf("}\n");
 

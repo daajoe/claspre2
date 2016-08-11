@@ -27,6 +27,9 @@
 #include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
+#include <exst/ExstTypes.h>
+#include <exst/extended_stats_calculator.h>
+
 #ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
@@ -246,7 +249,27 @@ bool LparseReader::readBody(uint32 lits, uint32 neg, bool readWeights) {
 			check(source_->parseInt(w, 0, INT_MAX), "Weight Rule: bad or missing weight!");
 			rule_.body[i].second = w;
 		}
-	} 
+	}
+
+    WeightLiteral *it;
+	std::list<exst::lit_type> bodies;
+	for(it = rule_.body.begin(); it != rule_.body.end(); it++){
+		exst::lit_type l;
+		l.id = it->first.var();
+		l.s=it->first.sign() ? exst::NEGATIVE : exst::POSITIVE;
+		bodies.push_back(l);
+	}
+	std::list<exst::lit_type> heads;
+	Var *i;
+	for(i = rule_.heads.begin(); i != rule_.heads.end(); i++){
+		exst::lit_type l;
+		l.id = (*i);
+		l.s=exst::POSITIVE;
+		heads.push_back(l);
+	}
+	exst::StatsCalculator::getInstance().parseRule(bodies,heads);
+
+
 	api_->addRule(rule_);
 	rule_.clear();
 	return check(matchEol(*source_, true), "Illformed rule body!");

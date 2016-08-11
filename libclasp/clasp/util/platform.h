@@ -107,6 +107,6 @@ bool aligned(void* mem) {
 template <bool> struct static_assertion;
 template <>     struct static_assertion<true> {};
 
-#define static_assert(x, message) (void)sizeof(static_assertion< (x) >)
+//#define static_assert(x, message) void sizeof(static_assertion< (x) >)
 
 #endif

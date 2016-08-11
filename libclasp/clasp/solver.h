@@ -27,6 +27,7 @@
 #include <clasp/solver_types.h>
 #include <clasp/solver_strategies.h>
 #include <clasp/shared_context.h>
+#include <exst/extended_stats_calculator.h>
 
 namespace Clasp { 
 
@@ -967,7 +968,16 @@ public:
 	 * \post
 	 * If true is returned, the heuristic has asserted a literal.
 	 */
-	bool select(Solver& s) { return s.numFreeVars() != 0 && s.assume(doSelect(s)); }
+	bool select(Solver& s) {
+		bool ret = s.numFreeVars() != 0 && s.assume(doSelect(s));
+		std::list<exst::lit_type> as;
+		const Literal *a;
+		for(a = s.assignment().trail.begin(); a != s.assignment().trail.end(); a++){
+			as.push_back(exst::lit_type(a->var(),a->sign() ? exst::POSITIVE : exst::NEGATIVE));
+		}
+		exst::StatsCalculator::getInstance().graphStatsCalculator.incidenceGraphStats.updateAssignment(as);
+		return ret;
+	}
 
 	//! Implements the actual selection process.
 	/*!

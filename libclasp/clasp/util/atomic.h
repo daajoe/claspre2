@@ -30,10 +30,10 @@ namespace std { using tbb::atomic; }
 #else
 namespace Clasp { namespace Serial {
 template <class T>
-struct atomic {
+struct atomic_ {
 	typedef T value_type;
-	atomic() : value(value_type()) {}
-	atomic& operator=(value_type t) { value = t; return *this; }
+	atomic_() : value(value_type()) {}
+	atomic_& operator=(value_type t) { value = t; return *this; }
 	operator value_type() const { return value; }
 	value_type operator+=(value_type v) { return value += v; }
 	value_type operator-=(value_type v) { return value -= v; }
@@ -50,12 +50,12 @@ struct atomic {
 	T value;
 };
 }}
-namespace std { using Clasp::Serial::atomic; }
+namespace std { using Clasp::Serial::atomic_; }
 #endif
 
 // effect: T temp; a |= mask; return temp
 template <class T>
-inline T fetch_and_or(std::atomic<T>& a, T mask) {
+inline T fetch_and_or(std::atomic_<T>& a, T mask) {
 	T x;
 	do {
 		x = a;
@@ -65,7 +65,7 @@ inline T fetch_and_or(std::atomic<T>& a, T mask) {
 
 // effect: T temp; a &= mask; return temp
 template <class T>
-inline T fetch_and_and(std::atomic<T>& a, T mask) {
+inline T fetch_and_and(std::atomic_<T>& a, T mask) {
 	T x;
 	do {
 		x = a;

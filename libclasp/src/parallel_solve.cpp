@@ -197,9 +197,9 @@ struct ParallelSolve::SharedData {
 	BarrierSemaphore    workSem;     // work-semaphore
 	queue               workQ;       // work-queue
 	uint32              nextId;      // next solver id to use
-	std::atomic<int>    workReq;     // > 0: someone needs work
-	std::atomic<uint32> restartReq;  // == numThreads(): restart
-	std::atomic<uint32> control;     // set of active message flags
+	std::atomic_<int>    workReq;     // > 0: someone needs work
+	std::atomic_<uint32> restartReq;  // == numThreads(): restart
+	std::atomic_<uint32> control;     // set of active message flags
 };
 
 // post message to all threads

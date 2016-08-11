@@ -214,7 +214,7 @@ private:
 	uint64              numModels_;
 	Report*             report_;
 	SharedMinimizeData* mini_;
-	std::atomic<uint32> updates_;
+	std::atomic_<uint32> updates_;
 	uint32              activeLevel_;
 	bool                restartOnModel_;
 };
